@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
-import 'package:khatorgame/features/deals/presentation/services/cheapshark_service.dart';
+import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
+import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
+import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
 
 class DealsDetailPage extends StatefulWidget {
   const DealsDetailPage({
@@ -17,22 +18,23 @@ class DealsDetailPage extends StatefulWidget {
 }
 
 class _DealsDetailPageState extends State<DealsDetailPage> {
-  late final Future<CheapSharkDealDetail> _detailFuture;
+  final DealsUsecase _usecase = DealsUsecase(DealsRepositoryImpl());
+  late final Future<DealsDetailEntity> _detailFuture;
 
   @override
   void initState() {
     super.initState();
-    _detailFuture = CheapSharkService.instance.fetchDealDetail(widget.dealId);
+    _detailFuture = _usecase.getDealDetail(widget.dealId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: FutureBuilder<CheapSharkDealDetail>(
+      body: FutureBuilder<DealsDetailEntity>(
         future: _detailFuture,
         builder:
-            (BuildContext context, AsyncSnapshot<CheapSharkDealDetail> snapshot) {
+            (BuildContext context, AsyncSnapshot<DealsDetailEntity> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -49,7 +51,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
             );
           }
 
-          final CheapSharkDealDetail detail = snapshot.data!;
+          final DealsDetailEntity detail = snapshot.data!;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: <Widget>[
