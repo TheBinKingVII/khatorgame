@@ -50,3 +50,5 @@ STRUCTURE.md
 .env.*
 !.env.example
 !example.env
+
+CheapShark API.postman_collection.json
