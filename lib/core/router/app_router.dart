@@ -22,6 +22,7 @@ class AppRouter {
   static const String registerPath = '/register';
 
   static final GoRouter router = GoRouter(
+    // initialLocation: dealsPath,
     initialLocation: SessionService.instance.isLoggedIn ? dealsPath : loginPath,
     refreshListenable: SessionService.instance,
     redirect: (BuildContext context, GoRouterState state) {
@@ -64,7 +65,7 @@ class AppRouter {
           GoRoute(
             path: chatbotPath,
             builder: (BuildContext context, GoRouterState state) =>
-                const ChatbotPage(),
+                ChatbotPage(),
           ),
           GoRoute(
             path: internetcafePath,
