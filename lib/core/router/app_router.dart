@@ -43,7 +43,7 @@ class AppRouter {
           GoRoute(
             path: chatbotPath,
             builder: (BuildContext context, GoRouterState state) =>
-                const ChatbotPage(),
+                ChatbotPage(),
           ),
           GoRoute(
             path: internetcafePath,

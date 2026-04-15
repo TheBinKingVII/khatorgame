@@ -1,5 +1,6 @@
 import '../models/chatbot_model.dart';
-import '../../../../core/network/api_client.dart'; // Sesuaikan path import jika muncul garis merah
+import '../../../../core/network/api_client.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract class ChatbotRemoteDataSource {
   Future<ChatbotModel> getGeminiResponse(String prompt);
@@ -10,7 +11,7 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
   final ApiClient apiClient;
   
   // TODO: Nanti ganti dengan pemanggilan dari file .env milikmu
-  final String apiKey = 'TARUH_API_KEY_GEMINI_DI_SINI'; 
+  final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? ''; 
 
   // 2. Inject ApiClient melalui constructor
   ChatbotRemoteDataSourceImpl(this.apiClient);
