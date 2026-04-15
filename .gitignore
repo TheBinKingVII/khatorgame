@@ -44,6 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+STRUCTURE.md
 # Environment files
 .env
 .env.*
