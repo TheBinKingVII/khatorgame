@@ -7,24 +7,25 @@ abstract class ChatbotRemoteDataSource {
 }
 
 class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
-  // 1. Ganti Dio menjadi ApiClient buatan temanmu
   final ApiClient apiClient;
-  
-  // TODO: Nanti ganti dengan pemanggilan dari file .env milikmu
   final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? ''; 
 
-  // 2. Inject ApiClient melalui constructor
   ChatbotRemoteDataSourceImpl(this.apiClient);
 
   @override
   Future<ChatbotModel> getGeminiResponse(String prompt) async {
+    if (apiKey.isEmpty) {
+      throw Exception('API Key kosong!');
+    }
+
     try {
-      final path = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey';
+      final path = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey';
       
-      // 3. Gunakan method post dari ApiClient
-      // Perhatikan parameter 'body' sesuai dengan kontrak di ApiClient
       final response = await apiClient.post(
         path,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: {
           "contents": [
             {
@@ -36,9 +37,6 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
         },
       );
 
-      // 4. Asumsi: method post di ApiClient buatan temanmu me-return 
-      // data yang sudah berupa Map/JSON (response.data dari Dio).
-      // Jadi kita bisa langsung mengakses key-nya.
       final textResponse = response['candidates'][0]['content']['parts'][0]['text'];
       
       return ChatbotModel.fromGeminiResponse(
@@ -46,8 +44,6 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
       );
       
     } catch (e) {
-      // 5. Karena kita pakai ApiClient (abstraksi), kita catch exception umum dulu.
-      // Temanmu mungkin punya mekanisme custom error di ApiClient-nya.
       throw Exception('Terjadi kesalahan saat memanggil Gemini API: $e');
     }
   }

@@ -33,7 +33,7 @@ class ChatbotPage extends StatelessWidget {
               itemCount: controller.messages.length,
               itemBuilder: (context, index) {
                 final message = controller.messages[index];
-                return _buildChatBubble(message);
+                return _buildChatBubble(context,message);
               },
             )),
           ),
@@ -50,14 +50,14 @@ class ChatbotPage extends StatelessWidget {
     );
   }
 
-  Widget _buildChatBubble(message) {
+  Widget _buildChatBubble(BuildContext context, message) {
     bool isUser = message.isUser;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12.0),
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        constraints: BoxConstraints(maxWidth: Get.width * 0.75),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
           color: isUser ? Colors.deepPurple : Colors.grey[200],
           borderRadius: BorderRadius.only(
