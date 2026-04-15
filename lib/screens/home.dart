@@ -1,27 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:khatorgame/features/chatbot/presentation/pages/chatbot_page.dart';
-import 'package:khatorgame/features/deals/presentation/pages/deals_page.dart';
-import 'package:khatorgame/features/internetcafe/presentation/pages/internetcafe_page.dart';
-import 'package:khatorgame/features/minigames/presentation/pages/minigames_page.dart';
-import 'package:khatorgame/features/wishlist/presentation/pages/wishlist_page.dart';
+import 'package:go_router/go_router.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({
+    required this.child,
+    required this.currentIndex,
+    super.key,
+  });
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = const [
-    DealsPage(),
-    WishlistPage(),
-    ChatbotPage(),
-    InternetcafePage(),
-    MinigamesPage(),
-  ];
+  final Widget child;
+  final int currentIndex;
 
   final List<String> _titles = const [
     'Deals',
@@ -31,20 +19,26 @@ class _HomeScreenState extends State<HomeScreen> {
     'Minigames',
   ];
 
+  static const List<String> _tabRoutes = <String>[
+    '/deals',
+    '/wishlist',
+    '/chatbot',
+    '/internetcafe',
+    '/minigames',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
+        title: Text(_titles[currentIndex]),
       ),
-      body: _pages[_currentIndex],
+      body: child,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          context.go(_tabRoutes[index]);
         },
         items: const [
           BottomNavigationBarItem(
