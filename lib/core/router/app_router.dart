@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:khatorgame/core/services/session_service.dart';
 import 'package:khatorgame/features/auth/presentation/pages/auth_page.dart';
+import 'package:khatorgame/features/auth/presentation/pages/login_page.dart';
+import 'package:khatorgame/features/auth/presentation/pages/register_page.dart';
 import 'package:khatorgame/features/chatbot/presentation/pages/chatbot_page.dart';
 import 'package:khatorgame/features/deals/presentation/pages/deals_page.dart';
 import 'package:khatorgame/features/internetcafe/presentation/pages/internetcafe_page.dart';
@@ -15,9 +18,27 @@ class AppRouter {
   static const String internetcafePath = '/internetcafe';
   static const String minigamesPath = '/minigames';
   static const String authPath = '/auth';
+  static const String loginPath = '/login';
+  static const String registerPath = '/register';
 
   static final GoRouter router = GoRouter(
-    initialLocation: dealsPath,
+    initialLocation: SessionService.instance.isLoggedIn ? dealsPath : loginPath,
+    refreshListenable: SessionService.instance,
+    redirect: (BuildContext context, GoRouterState state) {
+      final bool isLoggedIn = SessionService.instance.isLoggedIn;
+      final bool isAuthRoute =
+          state.uri.path == loginPath || state.uri.path == registerPath;
+
+      if (!isLoggedIn && !isAuthRoute) {
+        return loginPath;
+      }
+
+      if (isLoggedIn && isAuthRoute) {
+        return dealsPath;
+      }
+
+      return null;
+    },
     routes: <RouteBase>[
       ShellRoute(
         builder: (BuildContext context, GoRouterState state, Widget child) {
@@ -60,6 +81,15 @@ class AppRouter {
       GoRoute(
         path: authPath,
         builder: (BuildContext context, GoRouterState state) => const AuthPage(),
+      ),
+      GoRoute(
+        path: loginPath,
+        builder: (BuildContext context, GoRouterState state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: registerPath,
+        builder: (BuildContext context, GoRouterState state) =>
+            const RegisterPage(),
       ),
     ],
   );
