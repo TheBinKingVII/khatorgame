@@ -3,13 +3,11 @@ import 'package:get/get.dart';
 import '../controllers/chatbot_controller.dart';
 
 class ChatbotPage extends StatelessWidget {
-  // Ambil controller yang sudah di-inject
-  final ChatbotController controller = Get.find<ChatbotController>();
   final TextEditingController _textController = TextEditingController();
 
   ChatbotPage({Key? key}) : super(key: key);
 
-  void _handleSend() {
+  void _handleSend(ChatbotController controller) {
     final text = _textController.text;
     if (text.isNotEmpty) {
       controller.sendMessage(text);
@@ -19,6 +17,8 @@ class ChatbotPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ChatbotController>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Khator AI Assistant'),
@@ -44,7 +44,7 @@ class ChatbotPage extends StatelessWidget {
             : const SizedBox.shrink()),
 
           // Input Field
-          _buildInputArea(),
+          _buildInputArea(controller),
         ],
       ),
     );
@@ -75,7 +75,7 @@ class ChatbotPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInputArea() {
+  Widget _buildInputArea(ChatbotController controller) {
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -92,12 +92,12 @@ class ChatbotPage extends StatelessWidget {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               ),
-              onSubmitted: (_) => _handleSend(),
+              onSubmitted: (_) => _handleSend(controller),
             ),
           ),
           const SizedBox(width: 10),
           IconButton(
-            onPressed: _handleSend,
+            onPressed: () => _handleSend(controller),
             icon: const Icon(Icons.send, color: Colors.deepPurple),
           ),
         ],

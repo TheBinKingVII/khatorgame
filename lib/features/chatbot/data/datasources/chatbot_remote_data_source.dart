@@ -41,7 +41,9 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
       // Jadi kita bisa langsung mengakses key-nya.
       final textResponse = response['candidates'][0]['content']['parts'][0]['text'];
       
-      return ChatbotModel.fromGeminiResponse(textResponse);
+      return ChatbotModel.fromGeminiResponse(
+        textResponse as String? ?? 'Maaf, AI belum bisa menanggapi saat ini.'
+      );
       
     } catch (e) {
       // 5. Karena kita pakai ApiClient (abstraksi), kita catch exception umum dulu.
