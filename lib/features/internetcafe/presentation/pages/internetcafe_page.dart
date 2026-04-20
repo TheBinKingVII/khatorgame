@@ -13,8 +13,8 @@ class InternetcafePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Registrasi controller
-    final controller = Get.put(InternetcafeController());
+    // Ambil controller dari Dependency Injection
+    final InternetcafeController controller = Get.find<InternetcafeController>();
 
     return Scaffold(
       appBar: AppBar(

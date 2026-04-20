@@ -12,6 +12,12 @@ import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:khatorgame/features/chatbot/domain/usecases/chatbot_usecase.dart';
 import 'package:khatorgame/features/chatbot/presentation/controllers/chatbot_controller.dart';
+import 'package:khatorgame/features/internetcafe/data/datasources/internetcafe_device_data_source.dart';
+import 'package:khatorgame/features/internetcafe/data/datasources/internetcafe_remote_data_source.dart';
+import 'package:khatorgame/features/internetcafe/data/repositories/internetcafe_repository_impl.dart';
+import 'package:khatorgame/features/internetcafe/domain/repositories/internetcafe_repository.dart';
+import 'package:khatorgame/features/internetcafe/domain/usecases/internetcafe_usecase.dart';
+import 'package:khatorgame/features/internetcafe/presentation/controllers/internetcafe_controller.dart';
 import 'package:khatorgame/features/minigames/data/datasources/minigames_local_data_source.dart';
 import 'package:khatorgame/features/minigames/data/datasources/minigames_remote_data_source.dart';
 import 'package:khatorgame/features/minigames/data/repositories/minigames_repository_impl.dart';
@@ -135,6 +141,21 @@ void setupDependencies() {
   Get.put<MinigamesUsecase>(MinigamesUsecase(Get.find<MinigamesRepository>()));
   Get.put<MinigamesController>(
     MinigamesController(Get.find<MinigamesUsecase>()),
+    permanent: true,
+  );
+
+  // 6. Internetcafe
+  Get.put<InternetcafeDeviceDataSource>(InternetcafeDeviceDataSourceImpl());
+  Get.put<InternetcafeRemoteDataSource>(InternetcafeRemoteDataSourceImpl());
+  Get.put<InternetcafeRepository>(
+    InternetcafeRepositoryImpl(
+      deviceDataSource: Get.find<InternetcafeDeviceDataSource>(),
+      remoteDataSource: Get.find<InternetcafeRemoteDataSource>(),
+    ),
+  );
+  Get.put<InternetcafeUsecase>(InternetcafeUsecase(Get.find<InternetcafeRepository>()));
+  Get.put<InternetcafeController>(
+    InternetcafeController(Get.find<InternetcafeUsecase>()),
     permanent: true,
   );
 }
