@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:khatorgame/core/services/session_service.dart';
+import 'package:get/get.dart';
+import 'package:khatorgame/features/minigames/presentation/controllers/minigames_controller.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FallingItem {
   final String emoji;
@@ -30,8 +29,8 @@ class MinigamesPage extends StatefulWidget {
 }
 
 class _MinigamesPageState extends State<MinigamesPage> {
-  // Supabase instance
-  final _supabase = Supabase.instance.client;
+  // GetX Controller (Logic & State)
+  final MinigamesController _controller = Get.find<MinigamesController>();
 
   // Sensor streams
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
@@ -48,9 +47,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
 
   bool _isGameOver = false;
   bool _gameStarted = false; // Flag status game
-  bool _hasClaimedToday = false; // Flag limit harian
-  bool _isClaiming = false; // Flag loading saat ambil voucher dari DB
-  List<String> _myVouchers = [];
 
   // Scoring Target
   final int _targetScore = 200; // Target testing (ganti ke 2000 nanti)
@@ -64,73 +60,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
   @override
   void initState() {
     super.initState();
-    _loadGameData();
     _initSensors();
-  }
-
-  // Load data limit harian dan daftar voucher dari storage
-  // (Nanti bisa diubah tarik dari DB juga, tapi buat sekarang kita pake shared_prefs buat limitnya)
-  Future<void> _loadGameData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    final lastClaim = prefs.getString('last_voucher_claim_date') ?? "";
-    
-    setState(() {
-      _hasClaimedToday = (lastClaim == today);
-      _myVouchers = prefs.getStringList('collected_vouchers') ?? [];
-    });
-  }
-
-  // Ambil voucher random dari DB yang user_id nya null
-  Future<void> _claimVoucherFromDatabase() async {
-    setState(() => _isClaiming = true);
-
-    try {
-      final currentUserId = _supabase.auth.currentUser?.id;
-      if (currentUserId == null) throw "User tidak terdeteksi (Login dulu gih)";
-
-      // 1. Cari 1 voucher yang belum dimiliki siapapun
-      final response = await _supabase
-          .from('vouchers')
-          .select()
-          .isFilter('user_id', null)
-          .limit(1)
-          .maybeSingle();
-
-      if (response == null) {
-        throw "Waduh, stok voucher lagi abis bray! Hubungi admin.";
-      }
-
-      final voucherId = response['id'];
-      final voucherCode = response['code'];
-
-      // 2. Tandai voucher ini milik kita
-      await _supabase
-          .from('vouchers')
-          .update({'user_id': currentUserId})
-          .eq('id', voucherId);
-
-      // 3. Simpan catatan lokal dan update status harian
-      final prefs = await SharedPreferences.getInstance();
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      
-      _myVouchers.add(voucherCode);
-      await prefs.setStringList('collected_vouchers', _myVouchers);
-      await prefs.setString('last_voucher_claim_date', today);
-
-      if (mounted) {
-        setState(() {
-          _hasClaimedToday = true;
-          _isClaiming = false;
-        });
-        _showSuccessWinDialog(voucherCode);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isClaiming = false);
-        _showErrorDialog(e.toString());
-      }
-    }
   }
 
   void _showErrorDialog(String message) {
@@ -257,13 +187,19 @@ class _MinigamesPageState extends State<MinigamesPage> {
     );
   }
 
-  void _gameWin() {
+  void _gameWin() async {
     _isGameOver = true;
     _gameLoopTimer?.cancel();
     _spawnTimer?.cancel();
     
-    // Panggil fungsi klaim dari database
-    _claimVoucherFromDatabase();
+    // Panggil fungsi klaim dari controller
+    final voucherCode = await _controller.claimVoucher();
+    if (voucherCode != null && mounted) {
+      _showSuccessWinDialog(voucherCode);
+    } else if (mounted && _controller.errorMessage.value.isNotEmpty) {
+      _showErrorDialog(_controller.errorMessage.value);
+      setState(() => _gameStarted = false);
+    }
   }
 
   void _showSuccessWinDialog(String voucherCode) {
@@ -310,10 +246,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
       // Tutup dialognya pake konteks dialog itu sendiri
       Navigator.of(dialogContext).pop();
       
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('collected_vouchers');
-      await prefs.remove('last_voucher_claim_date');
-      await _loadGameData();
+      await _controller.resetTestingData();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -334,11 +267,11 @@ class _MinigamesPageState extends State<MinigamesPage> {
         title: const Text('Koleksi Voucher Kamu', style: TextStyle(color: Colors.white)),
         content: SizedBox(
           width: double.maxFinite,
-          child: _myVouchers.isEmpty
+          child: Obx(() => _controller.collectedVouchers.isEmpty
               ? const Text('Belum ada voucher bray. Main dulu!', style: TextStyle(color: Colors.white54))
               : ListView.builder(
                   shrinkWrap: true,
-                  itemCount: _myVouchers.length,
+                  itemCount: _controller.collectedVouchers.length,
                   itemBuilder: (context, index) {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -347,13 +280,13 @@ class _MinigamesPageState extends State<MinigamesPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_myVouchers[index], style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                          Text(_controller.collectedVouchers[index], style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
                           const Icon(Icons.copy, size: 16, color: Colors.white24),
                         ],
                       ),
                     );
                   },
-                ),
+                )),
         ),
         actions: [
           TextButton(
@@ -438,39 +371,42 @@ class _MinigamesPageState extends State<MinigamesPage> {
           _buildInstructionItem(Icons.pan_tool, 'Tutup Sensor Atas', 'Aktifkan Magnet & Shield (3 detik).'),
           _buildInstructionItem(Icons.star, 'Kumpulkan $_targetScore Poin', 'Dapatkan 1 Voucher Steam per hari.'),
           const Spacer(),
-          if (_hasClaimedToday)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-              child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya bro.',
-                  textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
-            )
-          else
-            SizedBox(
-              width: double.infinity, height: 60,
-              child: ElevatedButton(
-                onPressed: _startGame,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurpleAccent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          Obx(() {
+            if (_controller.hasClaimedToday.value) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya bro.',
+                    textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+              );
+            } else {
+              return SizedBox(
+                width: double.infinity, height: 60,
+                child: ElevatedButton(
+                  onPressed: _startGame,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurpleAccent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  child: const Text('MULAI BERMAIN',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
-                child: const Text('MULAI BERMAIN',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ),
+              );
+            }
+          }),
           const SizedBox(height: 30),
-          Row(
+          Obx(() => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Voucher di Inventory: ${_myVouchers.length}', style: const TextStyle(color: Colors.white54)),
+              Text('Voucher di Inventory: ${_controller.collectedVouchers.length}', style: const TextStyle(color: Colors.white54)),
               const SizedBox(width: 10),
-              if (_myVouchers.isNotEmpty)
+              if (_controller.collectedVouchers.isNotEmpty)
                 GestureDetector(
                   onTap: _showInventoryDialog,
                   child: const Text('LIHAT SEMUA', style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 12, decoration: TextDecoration.underline)),
                 ),
             ],
-          ),
+          )),
         ],
       ),
     );
@@ -548,20 +484,24 @@ class _MinigamesPageState extends State<MinigamesPage> {
                       child: const Center(child: Text('🛒', style: TextStyle(fontSize: 28))),
                     ),
                   ),
-                  if (_isClaiming)
-                    Container(
-                      color: Colors.black54,
-                      child: const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(color: Colors.amber),
-                            SizedBox(height: 15),
-                            Text('Menghubungi Gudang Gear...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          ],
+                  Obx(() {
+                    if (_controller.isClaiming.value) {
+                      return Container(
+                        color: Colors.black54,
+                        child: const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(color: Colors.amber),
+                              SizedBox(height: 15),
+                              Text('Menghubungi Gudang Gear...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
                 ],
               ),
             ),

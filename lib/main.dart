@@ -12,6 +12,12 @@ import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:khatorgame/features/chatbot/domain/usecases/chatbot_usecase.dart';
 import 'package:khatorgame/features/chatbot/presentation/controllers/chatbot_controller.dart';
+import 'package:khatorgame/features/minigames/data/datasources/minigames_local_data_source.dart';
+import 'package:khatorgame/features/minigames/data/datasources/minigames_remote_data_source.dart';
+import 'package:khatorgame/features/minigames/data/repositories/minigames_repository_impl.dart';
+import 'package:khatorgame/features/minigames/domain/repositories/minigames_repository.dart';
+import 'package:khatorgame/features/minigames/domain/usecases/minigames_usecase.dart';
+import 'package:khatorgame/features/minigames/presentation/controllers/minigames_controller.dart';
 import 'package:khatorgame/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:khatorgame/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:khatorgame/features/profile/domain/repositories/profile_repository.dart';
@@ -114,6 +120,21 @@ void setupDependencies() {
       updateNotificationUsecase: Get.find<UpdateNotificationUsecase>(),
       uploadAvatarUsecase: Get.find<UploadAvatarUsecase>(),
     ),
+    permanent: true,
+  );
+
+  // 5. Minigames
+  Get.put<MinigamesRemoteDataSource>(MinigamesRemoteDataSourceImpl());
+  Get.put<MinigamesLocalDataSource>(MinigamesLocalDataSourceImpl());
+  Get.put<MinigamesRepository>(
+    MinigamesRepositoryImpl(
+      remoteDataSource: Get.find<MinigamesRemoteDataSource>(),
+      localDataSource: Get.find<MinigamesLocalDataSource>(),
+    ),
+  );
+  Get.put<MinigamesUsecase>(MinigamesUsecase(Get.find<MinigamesRepository>()));
+  Get.put<MinigamesController>(
+    MinigamesController(Get.find<MinigamesUsecase>()),
     permanent: true,
   );
 }

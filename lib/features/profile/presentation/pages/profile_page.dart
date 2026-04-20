@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/router/app_router.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
@@ -111,6 +112,18 @@ class ProfilePage extends StatelessWidget {
                         builder: (_) => const NotificationSettingsPage(),
                       ),
                     );
+                  },
+                ),
+              ],
+            ),
+            ProfileMenuSection(
+              children: <Widget>[
+                ProfileMenuTile(
+                  icon: Icons.videogame_asset_outlined,
+                  title: 'Gudang Gear (Minigame)',
+                  subtitle: 'Main & dapatkan Voucher Steam!',
+                  onTap: () {
+                    context.push(AppRouter.minigamesPath);
                   },
                 ),
               ],
