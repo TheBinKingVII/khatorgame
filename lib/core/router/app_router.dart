@@ -9,6 +9,7 @@ import 'package:khatorgame/features/deals/presentation/pages/deals_page.dart';
 import 'package:khatorgame/features/internetcafe/presentation/pages/internetcafe_page.dart';
 import 'package:khatorgame/features/minigames/presentation/pages/minigames_page.dart';
 import 'package:khatorgame/features/profile/presentation/pages/profile_page.dart';
+import 'package:khatorgame/features/profile/presentation/pages/biometric_settings_page.dart';
 import 'package:khatorgame/features/wishlist/presentation/pages/wishlist_page.dart';
 import 'package:khatorgame/screens/home.dart';
 
@@ -22,6 +23,7 @@ class AppRouter {
   static const String authPath = '/auth';
   static const String loginPath = '/login';
   static const String registerPath = '/register';
+  static const String biometricSettingsPath = '/biometric-settings';
 
   static final GoRouter router = GoRouter(
     // initialLocation: dealsPath,
@@ -100,6 +102,11 @@ class AppRouter {
         path: registerPath,
         builder: (BuildContext context, GoRouterState state) =>
             const RegisterPage(),
+      ),
+      GoRoute(
+        path: biometricSettingsPath,
+        builder: (BuildContext context, GoRouterState state) =>
+            const BiometricSettingsPage(),
       ),
     ],
   );

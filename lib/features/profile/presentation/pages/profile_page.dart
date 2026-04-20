@@ -24,7 +24,8 @@ class ProfilePage extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      if (controller.errorMessage.value != null && controller.profile.value == null) {
+      if (controller.errorMessage.value != null &&
+          controller.profile.value == null) {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -75,7 +76,9 @@ class ProfilePage extends StatelessWidget {
               profile: profile,
               onEditTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const EditProfilePage()),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const EditProfilePage(),
+                  ),
                 );
               },
             ),
@@ -97,14 +100,28 @@ class ProfilePage extends StatelessWidget {
                   subtitle: profile.currencyCode,
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const CurrencyPage()),
+                      MaterialPageRoute<void>(
+                        builder: (_) => const CurrencyPage(),
+                      ),
                     );
+                  },
+                ),
+                ProfileMenuTile(
+                  icon: Icons.fingerprint_outlined,
+                  title: 'Biometric Login',
+                  subtitle: controller.isBiometricEnabled.value
+                      ? 'Enabled'
+                      : 'Disabled',
+                  onTap: () {
+                    context.push('/biometric-settings');
                   },
                 ),
                 ProfileMenuTile(
                   icon: Icons.notifications_none_outlined,
                   title: 'Notifications',
-                  subtitle: profile.notificationsEnabled ? 'Enabled' : 'Disabled',
+                  subtitle: profile.notificationsEnabled
+                      ? 'Enabled'
+                      : 'Disabled',
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
@@ -121,10 +138,7 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.contact_support_outlined,
                   title: 'Contact Us',
                 ),
-                ProfileMenuTile(
-                  icon: Icons.help_outline,
-                  title: 'Get Help',
-                ),
+                ProfileMenuTile(icon: Icons.help_outline, title: 'Get Help'),
                 ProfileMenuTile(
                   icon: Icons.privacy_tip_outlined,
                   title: 'Privacy Policy',
@@ -160,4 +174,3 @@ class ProfilePage extends StatelessWidget {
     });
   }
 }
-
