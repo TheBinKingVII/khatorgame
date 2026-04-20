@@ -12,6 +12,15 @@ import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:khatorgame/features/chatbot/domain/usecases/chatbot_usecase.dart';
 import 'package:khatorgame/features/chatbot/presentation/controllers/chatbot_controller.dart';
+import 'package:khatorgame/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:khatorgame/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:khatorgame/features/profile/domain/repositories/profile_repository.dart';
+import 'package:khatorgame/features/profile/domain/usecases/get_profile_usecase.dart';
+import 'package:khatorgame/features/profile/domain/usecases/update_currency_usecase.dart';
+import 'package:khatorgame/features/profile/domain/usecases/update_notification_usecase.dart';
+import 'package:khatorgame/features/profile/domain/usecases/update_profile_usecase.dart';
+import 'package:khatorgame/features/profile/domain/usecases/upload_avatar_usecase.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:khatorgame/features/wishlist/data/datasources/wishlist_local_data_source.dart';
 import 'package:khatorgame/features/wishlist/data/datasources/wishlist_remote_data_source.dart';
 import 'package:khatorgame/features/wishlist/data/repositories/wishlist_repository_impl.dart';
@@ -32,7 +41,7 @@ Future<void> main() async {
 
   setupDependencies();
 
-  if (SessionService.instance.isLoggedIn) {
+  if (SessionService.instance.hasValidSession) {
     try {
       await Get.find<WishlistRepository>().syncFromRemote();
       await Get.find<WishlistController>().refreshFromLocal();
@@ -74,6 +83,37 @@ void setupDependencies() {
   Get.put<WishlistUsecase>(WishlistUsecase(Get.find<WishlistRepository>()));
   Get.put<WishlistController>(
     WishlistController(Get.find<WishlistUsecase>()),
+    permanent: true,
+  );
+
+  // 4. Profile
+  Get.put<ProfileRemoteDataSource>(ProfileRemoteDataSourceImpl());
+  Get.put<ProfileRepository>(
+    ProfileRepositoryImpl(
+      remoteDataSource: Get.find<ProfileRemoteDataSource>(),
+    ),
+  );
+  Get.put<GetProfileUsecase>(GetProfileUsecase(Get.find<ProfileRepository>()));
+  Get.put<UpdateProfileUsecase>(
+    UpdateProfileUsecase(Get.find<ProfileRepository>()),
+  );
+  Get.put<UpdateCurrencyUsecase>(
+    UpdateCurrencyUsecase(Get.find<ProfileRepository>()),
+  );
+  Get.put<UpdateNotificationUsecase>(
+    UpdateNotificationUsecase(Get.find<ProfileRepository>()),
+  );
+  Get.put<UploadAvatarUsecase>(
+    UploadAvatarUsecase(Get.find<ProfileRepository>()),
+  );
+  Get.put<ProfileController>(
+    ProfileController(
+      getProfileUsecase: Get.find<GetProfileUsecase>(),
+      updateProfileUsecase: Get.find<UpdateProfileUsecase>(),
+      updateCurrencyUsecase: Get.find<UpdateCurrencyUsecase>(),
+      updateNotificationUsecase: Get.find<UpdateNotificationUsecase>(),
+      uploadAvatarUsecase: Get.find<UploadAvatarUsecase>(),
+    ),
     permanent: true,
   );
 }

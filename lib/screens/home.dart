@@ -11,29 +11,18 @@ class HomeScreen extends StatelessWidget {
   final Widget child;
   final int currentIndex;
 
-  final List<String> _titles = const [
-    'Deals',
-    'Wishlist',
-    'Chatbot',
-    'Internet Cafe',
-    'Minigames',
-  ];
-
   static const List<String> _tabRoutes = <String>[
     '/deals',
     '/wishlist',
     '/chatbot',
     '/internetcafe',
-    '/minigames',
+    '/profile',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[currentIndex]),
-      ),
-      body: child,
+      body: Padding(padding: const EdgeInsets.only(top: 36), child: child),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
@@ -58,8 +47,8 @@ class HomeScreen extends StatelessWidget {
             label: 'Internet Cafe',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.sports_esports_outlined),
-            label: 'Minigames',
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
           ),
         ],
       ),
