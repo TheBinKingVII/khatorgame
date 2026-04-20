@@ -10,4 +10,9 @@ abstract class DealsRepository {
   Future<DealsDetailEntity> fetchDealDetail(String dealId);
 
   Future<List<StoreEntity>> fetchActiveStores();
+
+  Future<List<GameSearchEntity>> searchGamesByTitle({
+    required String title,
+    int limit,
+  });
 }

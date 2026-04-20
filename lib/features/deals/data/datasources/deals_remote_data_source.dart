@@ -48,6 +48,25 @@ class DealsRemoteDataSource {
         .toList();
   }
 
+  Future<List<GameSearchModel>> searchGamesByTitle({
+    required String title,
+    int limit = 20,
+  }) async {
+    final Response<dynamic> response = await _dio.get<dynamic>(
+      '/games',
+      queryParameters: <String, dynamic>{
+        'title': title,
+        'limit': limit,
+      },
+    );
+    final List<dynamic> data = response.data as List<dynamic>;
+    return data
+        .map(
+          (dynamic item) => GameSearchModel.fromMap(item as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
   Future<DealsDetailModel> fetchDealDetail(String dealId) async {
     final String normalizedDealId = _normalizeDealId(dealId);
     final Response<dynamic> response = await _dio.get<dynamic>(
