@@ -55,8 +55,15 @@ class ChatbotController extends GetxController {
       messages.add(response);
     } catch (e) {
       print("Error AI: $e");
+      
+      String errText = e.toString();
+      // Hilangkan awalan "Exception: " yang otomatis ditambah oleh Dart
+      if (errText.startsWith('Exception: ')) {
+        errText = errText.substring(11);
+      }
+
       messages.add(ChatbotEntity(
-        text: "Waduh, koneksi ke Gemini lagi bermasalah nih", 
+        text: errText, 
         isUser: false,
       ));
     } finally {
