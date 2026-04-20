@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/currency_price_formatter.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dart';
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,6 +22,7 @@ class DealsDetailPage extends StatefulWidget {
 
 class _DealsDetailPageState extends State<DealsDetailPage> {
   final DealsUsecase _usecase = DealsUsecase(DealsRepositoryImpl());
+  final ProfileController _profileController = Get.find<ProfileController>();
   late final Future<DealsDetailEntity> _detailFuture;
 
   @override
@@ -28,8 +31,40 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     _detailFuture = _usecase.getDealDetail(widget.dealId);
   }
 
-  String _priceLine(DealsDetailEntity detail) {
-    return 'Sale \$${detail.salePrice} · Normal \$${detail.retailPrice}';
+  Future<String> _priceLine(
+    DealsDetailEntity detail,
+    String currencyCode,
+  ) async {
+    return CurrencyPriceFormatter.formatPriceLine(
+      salePriceUsd: detail.salePrice,
+      normalPriceUsd: detail.retailPrice,
+      currencyCode: currencyCode,
+    );
+  }
+
+  Future<_ConvertedDetailPrices> _convertDetailPrices(
+    DealsDetailEntity detail,
+    String currencyCode,
+  ) async {
+    final List<String> values = await Future.wait(<Future<String>>[
+      CurrencyPriceFormatter.formatFromUsd(
+        amountText: detail.salePrice,
+        currencyCode: currencyCode,
+      ),
+      CurrencyPriceFormatter.formatFromUsd(
+        amountText: detail.retailPrice,
+        currencyCode: currencyCode,
+      ),
+      CurrencyPriceFormatter.formatFromUsd(
+        amountText: detail.cheapestHistoricalPrice,
+        currencyCode: currencyCode,
+      ),
+    ]);
+    return _ConvertedDetailPrices(
+      salePrice: values[0],
+      retailPrice: values[1],
+      historicalPrice: values[2],
+    );
   }
 
   String _ratingLabelForStore(String storeId) {
@@ -103,6 +138,8 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
               tooltip: isFav ? 'Hapus dari wishlist' : 'Tambah ke wishlist',
               onPressed: () async {
                 try {
+                  final String currencyCode =
+                      _profileController.profile.value?.currencyCode ?? 'USD';
                   final DealsDetailEntity detail = await _detailFuture;
                   if (!context.mounted) return;
                   final bool wasFav = wishlistController.items.any(
@@ -111,7 +148,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                   await wishlistController.toggle(
                     dealId: widget.dealId,
                     title: detail.title,
-                    price: _priceLine(detail),
+                    price: await _priceLine(detail, currencyCode),
                     imageUrl: detail.thumb,
                   );
                   if (!context.mounted) return;
@@ -160,73 +197,107 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
               }
 
               final DealsDetailEntity detail = snapshot.data!;
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      detail.thumb,
-                      height: 180,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (
-                            BuildContext context,
-                            Object error,
-                            StackTrace? stackTrace,
-                          ) => Container(
-                            height: 180,
-                            color: Colors.grey.shade200,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image_outlined),
+              final String currencyCode =
+                  _profileController.profile.value?.currencyCode ?? 'USD';
+              return FutureBuilder<_ConvertedDetailPrices>(
+                future: _convertDetailPrices(detail, currencyCode),
+                builder:
+                    (
+                      BuildContext context,
+                      AsyncSnapshot<_ConvertedDetailPrices> priceSnapshot,
+                    ) {
+                      final _ConvertedDetailPrices prices =
+                          priceSnapshot.data ??
+                          const _ConvertedDetailPrices(
+                            salePrice: '...',
+                            retailPrice: '...',
+                            historicalPrice: '...',
+                          );
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              detail.thumb,
+                              height: 180,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (
+                                    BuildContext context,
+                                    Object error,
+                                    StackTrace? stackTrace,
+                                  ) => Container(
+                                    height: 180,
+                                    color: Colors.grey.shade200,
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.broken_image_outlined,
+                                    ),
+                                  ),
+                            ),
                           ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    detail.title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _DetailTile(
-                    label: 'Harga Sale',
-                    value: '\$${detail.salePrice}',
-                    valueColor: Colors.green.shade700,
-                  ),
-                  _DetailTile(
-                    label: 'Harga Normal',
-                    value: '\$${detail.retailPrice}',
-                  ),
-                  _DetailTile(
-                    label: _ratingLabelForStore(detail.storeId),
-                    value: detail.steamRatingText,
-                  ),
-                  _DetailTile(
-                    label: 'Metacritic',
-                    value: detail.metacriticScore,
-                  ),
-                  _DetailTile(
-                    label: 'Harga Termurah Sepanjang Waktu',
-                    value: '\$${detail.cheapestHistoricalPrice}',
-                  ),
-                  const SizedBox(height: 6),
-                  detail.metacriticLink.isNotEmpty
-                      ? FilledButton.icon(
-                          onPressed: () =>
-                              _openMetacritic(context, detail.metacriticLink),
-                          icon: const Icon(Icons.open_in_new),
-                          label: const Text('Buka Halaman Metacritic'),
-                        )
-                      : const SizedBox.shrink(),
-                ],
+                          const SizedBox(height: 16),
+                          Text(
+                            detail.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _DetailTile(
+                            label: 'Harga Sale',
+                            value: prices.salePrice,
+                            valueColor: Colors.green.shade700,
+                          ),
+                          _DetailTile(
+                            label: 'Harga Normal',
+                            value: prices.retailPrice,
+                          ),
+                          _DetailTile(
+                            label: _ratingLabelForStore(detail.storeId),
+                            value: detail.steamRatingText,
+                          ),
+                          _DetailTile(
+                            label: 'Metacritic',
+                            value: detail.metacriticScore,
+                          ),
+                          _DetailTile(
+                            label: 'Harga Termurah Sepanjang Waktu',
+                            value: prices.historicalPrice,
+                          ),
+                          const SizedBox(height: 6),
+                          detail.metacriticLink.isNotEmpty
+                              ? FilledButton.icon(
+                                  onPressed: () => _openMetacritic(
+                                    context,
+                                    detail.metacriticLink,
+                                  ),
+                                  icon: const Icon(Icons.open_in_new),
+                                  label: const Text('Buka Halaman Metacritic'),
+                                )
+                              : const SizedBox.shrink(),
+                        ],
+                      );
+                    },
               );
             },
       ),
     );
   }
+}
+
+class _ConvertedDetailPrices {
+  const _ConvertedDetailPrices({
+    required this.salePrice,
+    required this.retailPrice,
+    required this.historicalPrice,
+  });
+
+  final String salePrice;
+  final String retailPrice;
+  final String historicalPrice;
 }
 
 class _DetailTile extends StatelessWidget {
