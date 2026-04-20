@@ -25,4 +25,11 @@ class DealsUsecase {
   Future<List<StoreEntity>> getActiveStores() {
     return _repository.fetchActiveStores();
   }
+
+  Future<List<GameSearchEntity>> searchGamesByTitle({
+    required String title,
+    int limit = 20,
+  }) {
+    return _repository.searchGamesByTitle(title: title, limit: limit);
+  }
 }

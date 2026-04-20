@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
@@ -15,8 +17,14 @@ class DealsController extends GetxController {
   final RxBool hasMore = true.obs;
   final RxnString errorMessage = RxnString();
   final RxnInt selectedStoreId = RxnInt();
+  final RxString searchQuery = ''.obs;
+  final RxList<GameSearchEntity> searchResults = <GameSearchEntity>[].obs;
+  final RxBool isSearchLoading = false.obs;
 
   int _currentPage = 0;
+  Timer? _searchDebounce;
+
+  bool get isSearchMode => searchQuery.value.trim().isNotEmpty;
 
   Future<void> initialize() async {
     await _loadActiveStores();
@@ -84,5 +92,55 @@ class DealsController extends GetxController {
     if (selectedStoreId.value == storeId) return;
     selectedStoreId.value = storeId;
     await loadInitialDeals();
+  }
+
+  void onSearchChanged(String value) {
+    searchQuery.value = value;
+    _searchDebounce?.cancel();
+
+    final String query = value.trim();
+    if (query.isEmpty) {
+      searchResults.clear();
+      isSearchLoading.value = false;
+      return;
+    }
+
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () async {
+      await _runSearch(query);
+    });
+  }
+
+  Future<void> _runSearch(String query) async {
+    isSearchLoading.value = true;
+    try {
+      final List<GameSearchEntity> result = await _usecase.searchGamesByTitle(
+        title: query,
+      );
+      // Prevent stale results from older query from replacing newer input.
+      if (searchQuery.value.trim() != query) return;
+      searchResults
+        ..clear()
+        ..addAll(result);
+    } catch (_) {
+      if (searchQuery.value.trim() != query) return;
+      searchResults.clear();
+    } finally {
+      if (searchQuery.value.trim() == query) {
+        isSearchLoading.value = false;
+      }
+    }
+  }
+
+  void clearSearch() {
+    _searchDebounce?.cancel();
+    searchQuery.value = '';
+    searchResults.clear();
+    isSearchLoading.value = false;
+  }
+
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    super.onClose();
   }
 }

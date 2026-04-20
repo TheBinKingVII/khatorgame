@@ -6,6 +6,7 @@ import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
 import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dart';
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DealsDetailPage extends StatefulWidget {
   const DealsDetailPage({required this.dealId, required this.title, super.key});
@@ -31,6 +32,59 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     return 'Sale \$${detail.salePrice} · Normal \$${detail.retailPrice}';
   }
 
+  String _ratingLabelForStore(String storeId) {
+    const Map<String, String> storeById = <String, String>{
+      '1': 'Steam',
+      '2': 'GamersGate',
+      '3': 'GreenManGaming',
+      '7': 'GOG',
+      '8': 'Origin',
+      '11': 'Humble Store',
+      '13': 'Uplay',
+      '15': 'Fanatical',
+      '21': 'WinGameStore',
+      '23': 'GameBillet',
+      '24': 'Voidu',
+      '25': 'Epic Games Store',
+      '27': 'Gamesplanet',
+      '28': 'Gamesload',
+      '29': '2Game',
+      '30': 'IndieGala',
+      '31': 'Blizzard Shop',
+      '33': 'DLGamer',
+      '34': 'Noctre',
+      '35': 'DreamGame',
+    };
+    final String? storeName = storeById[storeId];
+    if (storeName == null || storeName.isEmpty) {
+      return 'Rating';
+    }
+    return 'Rating $storeName';
+  }
+
+  Future<void> _openMetacritic(
+    BuildContext context,
+    String metacriticLink,
+  ) async {
+    if (metacriticLink.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link Metacritic tidak tersedia')),
+      );
+      return;
+    }
+
+    final Uri url = Uri.parse('https://www.metacritic.com$metacriticLink');
+    final bool opened = await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal membuka link Metacritic')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final WishlistController wishlistController =
@@ -38,6 +92,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(widget.title),
         actions: <Widget>[
           Obx(() {
@@ -146,7 +201,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                     value: '\$${detail.retailPrice}',
                   ),
                   _DetailTile(
-                    label: 'Rating Steam',
+                    label: _ratingLabelForStore(detail.storeId),
                     value: detail.steamRatingText,
                   ),
                   _DetailTile(
@@ -157,6 +212,15 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                     label: 'Harga Termurah Sepanjang Waktu',
                     value: '\$${detail.cheapestHistoricalPrice}',
                   ),
+                  const SizedBox(height: 6),
+                  detail.metacriticLink.isNotEmpty
+                      ? FilledButton.icon(
+                          onPressed: () =>
+                              _openMetacritic(context, detail.metacriticLink),
+                          icon: const Icon(Icons.open_in_new),
+                          label: const Text('Buka Halaman Metacritic'),
+                        )
+                      : const SizedBox.shrink(),
                 ],
               );
             },

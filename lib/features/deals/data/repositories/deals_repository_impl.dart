@@ -30,4 +30,12 @@ class DealsRepositoryImpl implements DealsRepository {
   Future<List<StoreEntity>> fetchActiveStores() {
     return _remoteDataSource.fetchActiveStores();
   }
+
+  @override
+  Future<List<GameSearchEntity>> searchGamesByTitle({
+    required String title,
+    int limit = 20,
+  }) {
+    return _remoteDataSource.searchGamesByTitle(title: title, limit: limit);
+  }
 }

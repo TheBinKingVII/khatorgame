@@ -14,6 +14,7 @@ class DealsPage extends StatefulWidget {
 class _DealsPageState extends State<DealsPage> {
   final DealsController _controller = Get.put(DealsController());
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -26,12 +27,14 @@ class _DealsPageState extends State<DealsPage> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     Get.delete<DealsController>();
     super.dispose();
   }
 
   void _onScroll() {
     if (!_scrollController.hasClients ||
+        _controller.isSearchMode ||
         _controller.isLoadingMore.value ||
         !_controller.hasMore.value) {
       return;
@@ -65,44 +68,72 @@ class _DealsPageState extends State<DealsPage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Text(
-              'Stores',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _controller.onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Cari game...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _controller.searchQuery.value.trim().isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _controller.clearSearch();
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ),
-          SizedBox(
-            height: 46,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              scrollDirection: Axis.horizontal,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: const Text('All'),
-                    selected: _controller.selectedStoreId.value == null,
-                    onSelected: (_) => _controller.changeStoreFilter(null),
-                  ),
-                ),
-                ..._controller.stores.map(
-                  (store) => Padding(
+          if (!_controller.isSearchMode) ...<Widget>[
+            const Padding(
+              padding: EdgeInsets.fromLTRB(12, 2, 12, 6),
+              child: Text(
+                'Stores',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+            ),
+            SizedBox(
+              height: 46,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                scrollDirection: Axis.horizontal,
+                children: <Widget>[
+                  Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text(store.storeName),
-                      selected: _controller.selectedStoreId.value == store.storeId,
-                      onSelected: (_) =>
-                          _controller.changeStoreFilter(store.storeId),
+                      label: const Text('All'),
+                      selected: _controller.selectedStoreId.value == null,
+                      onSelected: (_) => _controller.changeStoreFilter(null),
                     ),
                   ),
-                ),
-              ],
+                  ..._controller.stores.map(
+                    (store) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(store.storeName),
+                        selected:
+                            _controller.selectedStoreId.value == store.storeId,
+                        onSelected: (_) =>
+                            _controller.changeStoreFilter(store.storeId),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
           Expanded(
-            child: _controller.deals.isEmpty
+            child: _controller.isSearchMode
+                ? _buildSearchResult()
+                : _controller.deals.isEmpty
                 ? const Center(child: Text('Belum ada deal tersedia.'))
                 : RefreshIndicator(
                     onRefresh: _controller.loadInitialDeals,
@@ -267,5 +298,99 @@ class _DealsPageState extends State<DealsPage> {
         ],
       );
     });
+  }
+
+  Widget _buildSearchResult() {
+    if (_controller.isSearchLoading.value) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_controller.searchResults.isEmpty) {
+      return const Center(child: Text('Game tidak ditemukan.'));
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      itemCount: _controller.searchResults.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (BuildContext context, int index) {
+        final GameSearchEntity game = _controller.searchResults[index];
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: game.cheapestDealId.trim().isEmpty
+                ? null
+                : () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => DealsDetailPage(
+                          dealId: game.cheapestDealId,
+                          title: game.external,
+                        ),
+                      ),
+                    );
+                  },
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      game.thumb,
+                      width: 88,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (
+                        BuildContext context,
+                        Object error,
+                        StackTrace? stackTrace,
+                      ) =>
+                          Container(
+                        width: 88,
+                        height: 56,
+                        color: Colors.grey.shade200,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.broken_image_outlined),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          game.external,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '\$${game.cheapest}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green,
+                          ),
+                        ),
+                        if (game.cheapestDealId.trim().isEmpty) ...<Widget>[
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Deal tidak tersedia',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
