@@ -18,6 +18,8 @@ class SessionService extends ChangeNotifier {
 
   bool get isInitialized => _isInitialized;
   bool get isLoggedIn => _isLoggedIn;
+  bool get hasValidSession =>
+      _isLoggedIn && _userId != null && _userId!.isNotEmpty;
   String? get userId => _userId;
   String? get userEmail => _userEmail;
 
@@ -26,6 +28,14 @@ class SessionService extends ChangeNotifier {
     _isLoggedIn = _preferences.getBool(_isLoggedInKey) ?? false;
     _userId = _preferences.getString(_userIdKey);
     _userEmail = _preferences.getString(_userEmailKey);
+    if (_isLoggedIn && (_userId == null || _userId!.isEmpty)) {
+      // Self-heal inconsistent persisted session.
+      _isLoggedIn = false;
+      _userEmail = null;
+      await _preferences.remove(_isLoggedInKey);
+      await _preferences.remove(_userIdKey);
+      await _preferences.remove(_userEmailKey);
+    }
     _isInitialized = true;
   }
 
