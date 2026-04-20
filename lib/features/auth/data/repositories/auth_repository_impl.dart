@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/services/session_service.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:khatorgame/features/wishlist/domain/repositories/wishlist_repository.dart';
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 
@@ -43,6 +44,9 @@ class AuthRepositoryImpl implements AuthRepository {
     if (Get.isRegistered<WishlistController>()) {
       await Get.find<WishlistController>().refreshFromLocal();
     }
+    if (Get.isRegistered<ProfileController>()) {
+      await Get.find<ProfileController>().loadProfile();
+    }
 
     return user;
   }
@@ -69,6 +73,9 @@ class AuthRepositoryImpl implements AuthRepository {
     await _sessionService.clearSession();
     if (Get.isRegistered<WishlistController>()) {
       Get.find<WishlistController>().clearState();
+    }
+    if (Get.isRegistered<ProfileController>()) {
+      Get.find<ProfileController>().clearState();
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:khatorgame/features/chatbot/presentation/pages/chatbot_page.dart
 import 'package:khatorgame/features/deals/presentation/pages/deals_page.dart';
 import 'package:khatorgame/features/internetcafe/presentation/pages/internetcafe_page.dart';
 import 'package:khatorgame/features/minigames/presentation/pages/minigames_page.dart';
+import 'package:khatorgame/features/profile/presentation/pages/profile_page.dart';
 import 'package:khatorgame/features/wishlist/presentation/pages/wishlist_page.dart';
 import 'package:khatorgame/screens/home.dart';
 
@@ -17,16 +18,19 @@ class AppRouter {
   static const String chatbotPath = '/chatbot';
   static const String internetcafePath = '/internetcafe';
   static const String minigamesPath = '/minigames';
+  static const String profilePath = '/profile';
   static const String authPath = '/auth';
   static const String loginPath = '/login';
   static const String registerPath = '/register';
 
   static final GoRouter router = GoRouter(
     // initialLocation: dealsPath,
-    initialLocation: SessionService.instance.isLoggedIn ? dealsPath : loginPath,
+    initialLocation: SessionService.instance.hasValidSession
+        ? dealsPath
+        : loginPath,
     refreshListenable: SessionService.instance,
     redirect: (BuildContext context, GoRouterState state) {
-      final bool isLoggedIn = SessionService.instance.isLoggedIn;
+      final bool isLoggedIn = SessionService.instance.hasValidSession;
       final bool isAuthRoute =
           state.uri.path == loginPath || state.uri.path == registerPath;
 
@@ -77,6 +81,11 @@ class AppRouter {
             builder: (BuildContext context, GoRouterState state) =>
                 const MinigamesPage(),
           ),
+          GoRoute(
+            path: profilePath,
+            builder: (BuildContext context, GoRouterState state) =>
+                const ProfilePage(),
+          ),
         ],
       ),
       GoRoute(
@@ -99,7 +108,9 @@ class AppRouter {
     if (location.startsWith(wishlistPath)) return 1;
     if (location.startsWith(chatbotPath)) return 2;
     if (location.startsWith(internetcafePath)) return 3;
+    // Minigames route is kept, but no longer shown as bottom tab.
     if (location.startsWith(minigamesPath)) return 4;
+    if (location.startsWith(profilePath)) return 4;
     return 0;
   }
 }
