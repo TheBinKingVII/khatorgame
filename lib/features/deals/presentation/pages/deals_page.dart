@@ -177,20 +177,25 @@ class _DealsPageState extends State<DealsPage> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(
-                              deal.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                  deal.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 6),
                             Text(
                               '\$${deal.salePrice}',
                               style: const TextStyle(

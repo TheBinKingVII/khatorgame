@@ -5,12 +5,19 @@ import 'package:get/get.dart';
 import 'package:khatorgame/core/network/api_client.dart';
 import 'package:khatorgame/core/network/api_client_impl.dart';
 import 'package:khatorgame/core/router/app_router.dart';
+import 'package:khatorgame/core/services/local_storage.dart';
 import 'package:khatorgame/core/services/session_service.dart';
 import 'package:khatorgame/features/chatbot/data/datasources/chatbot_remote_data_source.dart';
 import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:khatorgame/features/chatbot/domain/usecases/chatbot_usecase.dart';
 import 'package:khatorgame/features/chatbot/presentation/controllers/chatbot_controller.dart';
+import 'package:khatorgame/features/wishlist/data/datasources/wishlist_local_data_source.dart';
+import 'package:khatorgame/features/wishlist/data/datasources/wishlist_remote_data_source.dart';
+import 'package:khatorgame/features/wishlist/data/repositories/wishlist_repository_impl.dart';
+import 'package:khatorgame/features/wishlist/domain/repositories/wishlist_repository.dart';
+import 'package:khatorgame/features/wishlist/domain/usecases/wishlist_usecase.dart';
+import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -21,25 +28,54 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
   await SessionService.instance.init();
+  await LocalStorageService.instance.init();
 
   setupDependencies();
-  
+
+  if (SessionService.instance.isLoggedIn) {
+    try {
+      await Get.find<WishlistRepository>().syncFromRemote();
+      await Get.find<WishlistController>().refreshFromLocal();
+    } catch (error, stackTrace) {
+      debugPrint('Wishlist sync at startup: $error\n$stackTrace');
+    }
+  }
+
   runApp(const MyApp());
 }
 
 // Fungsi khusus untuk mendaftarkan semua layer Clean Architecture ke dalam memori
 void setupDependencies() {
-  // 1. Inisialisasi Core Network 
-  // Gunakan Get.put dan buang kurung panah ()=> 
+  // 1. Inisialisasi Core Network
+  // Gunakan Get.put dan buang kurung panah ()=>
   Get.put<ApiClient>(ApiClientImpl(Dio()));
 
-  // 2. Inisialisasi Fitur Chatbot 
-  Get.put<ChatbotRemoteDataSource>(ChatbotRemoteDataSourceImpl(Get.find<ApiClient>()));
-  Get.put<ChatbotRepository>(ChatbotRepositoryImpl(Get.find<ChatbotRemoteDataSource>()));
+  // 2. Inisialisasi Fitur Chatbot
+  Get.put<ChatbotRemoteDataSource>(
+    ChatbotRemoteDataSourceImpl(Get.find<ApiClient>()),
+  );
+  Get.put<ChatbotRepository>(
+    ChatbotRepositoryImpl(Get.find<ChatbotRemoteDataSource>()),
+  );
   Get.put(ChatbotUsecase(Get.find<ChatbotRepository>()));
-  
+
   // Controller langsung dihidupkan dan dikunci ke memori
   Get.put(ChatbotController(Get.find<ChatbotUsecase>()));
+
+  // 3. Wishlist (Supabase + SQLite cache)
+  Get.put<WishlistRemoteDataSource>(WishlistRemoteDataSourceImpl());
+  Get.put<WishlistLocalDataSource>(WishlistLocalDataSource());
+  Get.put<WishlistRepository>(
+    WishlistRepositoryImpl(
+      remoteDataSource: Get.find<WishlistRemoteDataSource>(),
+      localDataSource: Get.find<WishlistLocalDataSource>(),
+    ),
+  );
+  Get.put<WishlistUsecase>(WishlistUsecase(Get.find<WishlistRepository>()));
+  Get.put<WishlistController>(
+    WishlistController(Get.find<WishlistUsecase>()),
+    permanent: true,
+  );
 }
 
 class MyApp extends StatelessWidget {

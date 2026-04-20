@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:khatorgame/core/services/session_service.dart';
+import 'package:khatorgame/features/wishlist/domain/repositories/wishlist_repository.dart';
+import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 
 import '../datasources/auth_remote_data_source.dart';
 import '../../domain/entities/auth_entity.dart';
@@ -29,6 +33,17 @@ class AuthRepositoryImpl implements AuthRepository {
       userEmail: user.email,
     );
 
+    if (Get.isRegistered<WishlistRepository>()) {
+      try {
+        await Get.find<WishlistRepository>().syncFromRemote();
+      } catch (error, stackTrace) {
+        debugPrint('Wishlist sync after login: $error\n$stackTrace');
+      }
+    }
+    if (Get.isRegistered<WishlistController>()) {
+      await Get.find<WishlistController>().refreshFromLocal();
+    }
+
     return user;
   }
 
@@ -46,7 +61,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> logout() {
-    return _sessionService.clearSession();
+  Future<void> logout() async {
+    final String? userId = _sessionService.userId;
+    if (userId != null && Get.isRegistered<WishlistRepository>()) {
+      await Get.find<WishlistRepository>().clearLocalForUser(userId);
+    }
+    await _sessionService.clearSession();
+    if (Get.isRegistered<WishlistController>()) {
+      Get.find<WishlistController>().clearState();
+    }
   }
 }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
+import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dart';
+import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 
 class DealsDetailPage extends StatefulWidget {
   const DealsDetailPage({
@@ -27,10 +31,62 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     _detailFuture = _usecase.getDealDetail(widget.dealId);
   }
 
+  String _priceLine(DealsDetailEntity detail) {
+    return 'Sale \$${detail.salePrice} · Normal \$${detail.retailPrice}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final WishlistController wishlistController = Get.find<WishlistController>();
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: <Widget>[
+          Obx(() {
+            final bool isFav = wishlistController.items.any(
+              (WishlistItemEntity e) => e.dealId == widget.dealId,
+            );
+            return IconButton(
+              tooltip: isFav ? 'Hapus dari wishlist' : 'Tambah ke wishlist',
+              onPressed: () async {
+                try {
+                  final DealsDetailEntity detail = await _detailFuture;
+                  if (!context.mounted) return;
+                  final bool wasFav = wishlistController.items.any(
+                    (WishlistItemEntity e) => e.dealId == widget.dealId,
+                  );
+                  await wishlistController.toggle(
+                    dealId: widget.dealId,
+                    title: detail.title,
+                    price: _priceLine(detail),
+                    imageUrl: detail.thumb,
+                  );
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        wasFav
+                            ? 'Dihapus dari wishlist'
+                            : 'Ditambahkan ke wishlist',
+                      ),
+                    ),
+                  );
+                } catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(supabaseUserMessage(error))),
+                  );
+                }
+              },
+              icon: Icon(
+                isFav ? Icons.favorite : Icons.favorite_border,
+                color: isFav ? Colors.redAccent : null,
+              ),
+            );
+          }),
+        ],
+      ),
       body: FutureBuilder<DealsDetailEntity>(
         future: _detailFuture,
         builder:
