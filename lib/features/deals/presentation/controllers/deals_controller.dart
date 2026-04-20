@@ -5,16 +5,34 @@ import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
 
 class DealsController extends GetxController {
   DealsController({DealsUsecase? usecase})
-      : _usecase = usecase ?? DealsUsecase(DealsRepositoryImpl());
+    : _usecase = usecase ?? DealsUsecase(DealsRepositoryImpl());
 
   final DealsUsecase _usecase;
   final RxList<DealsEntity> deals = <DealsEntity>[].obs;
+  final RxList<StoreEntity> stores = <StoreEntity>[].obs;
   final RxBool isInitialLoading = true.obs;
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = true.obs;
   final RxnString errorMessage = RxnString();
+  final RxnInt selectedStoreId = RxnInt();
 
   int _currentPage = 0;
+
+  Future<void> initialize() async {
+    await _loadActiveStores();
+    await loadInitialDeals();
+  }
+
+  Future<void> _loadActiveStores() async {
+    try {
+      final List<StoreEntity> activeStores = await _usecase.getActiveStores();
+      stores
+        ..clear()
+        ..addAll(activeStores);
+    } catch (_) {
+      stores.clear();
+    }
+  }
 
   Future<void> loadInitialDeals() async {
     isInitialLoading.value = true;
@@ -24,7 +42,10 @@ class DealsController extends GetxController {
     deals.clear();
 
     try {
-      final List<DealsEntity> firstPage = await _usecase.getDeals(pageNumber: 0);
+      final List<DealsEntity> firstPage = await _usecase.getDeals(
+        pageNumber: 0,
+        storeId: selectedStoreId.value,
+      );
       deals.addAll(firstPage);
       hasMore.value = firstPage.isNotEmpty;
     } catch (error) {
@@ -41,8 +62,10 @@ class DealsController extends GetxController {
 
     try {
       final int nextPage = _currentPage + 1;
-      final List<DealsEntity> nextDeals =
-          await _usecase.getDeals(pageNumber: nextPage);
+      final List<DealsEntity> nextDeals = await _usecase.getDeals(
+        pageNumber: nextPage,
+        storeId: selectedStoreId.value,
+      );
       _currentPage = nextPage;
       deals.addAll(nextDeals);
       hasMore.value = nextDeals.isNotEmpty;
@@ -55,5 +78,11 @@ class DealsController extends GetxController {
 
   Future<DealsDetailEntity> getDealDetail(String dealId) {
     return _usecase.getDealDetail(dealId);
+  }
+
+  Future<void> changeStoreFilter(int? storeId) async {
+    if (selectedStoreId.value == storeId) return;
+    selectedStoreId.value = storeId;
+    await loadInitialDeals();
   }
 }

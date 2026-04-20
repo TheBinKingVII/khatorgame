@@ -22,6 +22,24 @@ class DealsModel extends DealsEntity {
   }
 }
 
+class StoreModel extends StoreEntity {
+  const StoreModel({
+    required super.storeId,
+    required super.storeName,
+    required this.isActive,
+  });
+
+  final bool isActive;
+
+  factory StoreModel.fromMap(Map<String, dynamic> map) {
+    return StoreModel(
+      storeId: int.tryParse((map['storeID'] ?? '').toString()) ?? 0,
+      storeName: (map['storeName'] ?? '-') as String,
+      isActive: (int.tryParse((map['isActive'] ?? '').toString()) ?? 0) == 1,
+    );
+  }
+}
+
 class DealsDetailModel extends DealsDetailEntity {
   const DealsDetailModel({
     required super.title,

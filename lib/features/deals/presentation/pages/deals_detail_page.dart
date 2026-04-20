@@ -8,11 +8,7 @@ import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dar
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 
 class DealsDetailPage extends StatefulWidget {
-  const DealsDetailPage({
-    required this.dealId,
-    required this.title,
-    super.key,
-  });
+  const DealsDetailPage({required this.dealId, required this.title, super.key});
 
   final String dealId;
   final String title;
@@ -37,7 +33,8 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final WishlistController wishlistController = Get.find<WishlistController>();
+    final WishlistController wishlistController =
+        Get.find<WishlistController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -91,78 +88,78 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
         future: _detailFuture,
         builder:
             (BuildContext context, AsyncSnapshot<DealsDetailEntity> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Gagal memuat detail.\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          final DealsDetailEntity detail = snapshot.data!;
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  detail.thumb,
-                  height: 180,
-                  fit: BoxFit.cover,
-                  errorBuilder: (
-                    BuildContext context,
-                    Object error,
-                    StackTrace? stackTrace,
-                  ) =>
-                      Container(
-                    height: 180,
-                    color: Colors.grey.shade200,
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.broken_image_outlined),
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Gagal memuat detail.\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                detail.title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _DetailTile(
-                label: 'Harga Sale',
-                value: '\$${detail.salePrice}',
-                valueColor: Colors.green.shade700,
-              ),
-              _DetailTile(
-                label: 'Harga Normal',
-                value: '\$${detail.retailPrice}',
-              ),
-              _DetailTile(
-                label: 'Rating Steam',
-                value: detail.steamRatingText,
-              ),
-              _DetailTile(
-                label: 'Metacritic',
-                value: detail.metacriticScore,
-              ),
-              _DetailTile(
-                label: 'Harga Termurah Sepanjang Waktu',
-                value: '\$${detail.cheapestHistoricalPrice}',
-              ),
-            ],
-          );
-        },
+                );
+              }
+
+              final DealsDetailEntity detail = snapshot.data!;
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: <Widget>[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      detail.thumb,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder:
+                          (
+                            BuildContext context,
+                            Object error,
+                            StackTrace? stackTrace,
+                          ) => Container(
+                            height: 180,
+                            color: Colors.grey.shade200,
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.broken_image_outlined),
+                          ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    detail.title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _DetailTile(
+                    label: 'Harga Sale',
+                    value: '\$${detail.salePrice}',
+                    valueColor: Colors.green.shade700,
+                  ),
+                  _DetailTile(
+                    label: 'Harga Normal',
+                    value: '\$${detail.retailPrice}',
+                  ),
+                  _DetailTile(
+                    label: 'Rating Steam',
+                    value: detail.steamRatingText,
+                  ),
+                  _DetailTile(
+                    label: 'Metacritic',
+                    value: detail.metacriticScore,
+                  ),
+                  _DetailTile(
+                    label: 'Harga Termurah Sepanjang Waktu',
+                    value: '\$${detail.cheapestHistoricalPrice}',
+                  ),
+                ],
+              );
+            },
       ),
     );
   }
@@ -198,10 +195,7 @@ class _DetailTile extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: valueColor,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w700, color: valueColor),
           ),
         ],
       ),

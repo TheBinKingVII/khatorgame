@@ -38,3 +38,13 @@ class DealsDetailEntity {
   final String metacriticScore;
   final String cheapestHistoricalPrice;
 }
+
+class StoreEntity {
+  const StoreEntity({
+    required this.storeId,
+    required this.storeName,
+  });
+
+  final int storeId;
+  final String storeName;
+}

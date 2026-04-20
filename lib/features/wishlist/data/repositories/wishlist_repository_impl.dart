@@ -11,9 +11,9 @@ class WishlistRepositoryImpl implements WishlistRepository {
     required WishlistRemoteDataSource remoteDataSource,
     required WishlistLocalDataSource localDataSource,
     SessionService? sessionService,
-  })  : _remote = remoteDataSource,
-        _local = localDataSource,
-        _session = sessionService ?? SessionService.instance;
+  }) : _remote = remoteDataSource,
+       _local = localDataSource,
+       _session = sessionService ?? SessionService.instance;
 
   final WishlistRemoteDataSource _remote;
   final WishlistLocalDataSource _local;

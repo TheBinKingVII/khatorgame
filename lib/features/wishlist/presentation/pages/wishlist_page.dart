@@ -69,18 +69,18 @@ class WishlistPage extends StatelessWidget {
                           width: 88,
                           height: 56,
                           fit: BoxFit.cover,
-                          errorBuilder: (
-                            BuildContext context,
-                            Object error,
-                            StackTrace? stackTrace,
-                          ) =>
-                              Container(
-                            width: 88,
-                            height: 56,
-                            color: Colors.grey.shade200,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image_outlined),
-                          ),
+                          errorBuilder:
+                              (
+                                BuildContext context,
+                                Object error,
+                                StackTrace? stackTrace,
+                              ) => Container(
+                                width: 88,
+                                height: 56,
+                                color: Colors.grey.shade200,
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.broken_image_outlined),
+                              ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -149,15 +149,15 @@ class WishlistPage extends StatelessWidget {
     try {
       await controller.syncFromRemote();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wishlist disinkronkan')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Wishlist disinkronkan')));
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supabaseUserMessage(error))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(supabaseUserMessage(error))));
       }
     }
   }
