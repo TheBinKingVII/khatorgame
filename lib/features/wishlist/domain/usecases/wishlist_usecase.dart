@@ -11,8 +11,7 @@ class WishlistUsecase {
   Future<List<WishlistItemEntity>> getLocalItems() =>
       _repository.getLocalItems();
 
-  Future<bool> isInWishlist(String dealId) =>
-      _repository.isInWishlist(dealId);
+  Future<bool> isInWishlist(String dealId) => _repository.isInWishlist(dealId);
 
   Future<void> addItem({
     required String dealId,

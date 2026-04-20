@@ -9,14 +9,20 @@ class DealsUsecase {
   Future<List<DealsEntity>> getDeals({
     required int pageNumber,
     int pageSize = 20,
+    int? storeId,
   }) {
     return _repository.fetchDeals(
       pageNumber: pageNumber,
       pageSize: pageSize,
+      storeId: storeId,
     );
   }
 
   Future<DealsDetailEntity> getDealDetail(String dealId) {
     return _repository.fetchDealDetail(dealId);
+  }
+
+  Future<List<StoreEntity>> getActiveStores() {
+    return _repository.fetchActiveStores();
   }
 }
