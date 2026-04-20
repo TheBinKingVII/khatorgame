@@ -41,6 +41,10 @@ dependencies:
   flutter_dotenv: ^5.2.1
   shared_preferences: ^2.5.3
   crypto: ^3.0.6
+  geolocator: ^14.0.2
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
