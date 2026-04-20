@@ -22,14 +22,34 @@ class DealsModel extends DealsEntity {
   }
 }
 
+class StoreModel extends StoreEntity {
+  const StoreModel({
+    required super.storeId,
+    required super.storeName,
+    required this.isActive,
+  });
+
+  final bool isActive;
+
+  factory StoreModel.fromMap(Map<String, dynamic> map) {
+    return StoreModel(
+      storeId: int.tryParse((map['storeID'] ?? '').toString()) ?? 0,
+      storeName: (map['storeName'] ?? '-') as String,
+      isActive: (int.tryParse((map['isActive'] ?? '').toString()) ?? 0) == 1,
+    );
+  }
+}
+
 class DealsDetailModel extends DealsDetailEntity {
   const DealsDetailModel({
+    required super.storeId,
     required super.title,
     required super.thumb,
     required super.salePrice,
     required super.retailPrice,
     required super.steamRatingText,
     required super.metacriticScore,
+    required super.metacriticLink,
     required super.cheapestHistoricalPrice,
   });
 
@@ -40,13 +60,37 @@ class DealsDetailModel extends DealsDetailEntity {
         map['cheapestPrice'] as Map<String, dynamic>? ?? <String, dynamic>{};
 
     return DealsDetailModel(
+      storeId: (gameInfo['storeID'] ?? '') as String,
       title: (gameInfo['name'] ?? '-') as String,
       thumb: (gameInfo['thumb'] ?? '') as String,
       salePrice: (gameInfo['salePrice'] ?? '0') as String,
       retailPrice: (gameInfo['retailPrice'] ?? '0') as String,
       steamRatingText: (gameInfo['steamRatingText'] ?? '-') as String,
       metacriticScore: (gameInfo['metacriticScore'] ?? '-') as String,
+      metacriticLink: (gameInfo['metacriticLink'] ?? '') as String,
       cheapestHistoricalPrice: (cheapestPrice['price'] ?? '0') as String,
+    );
+  }
+}
+
+class GameSearchModel extends GameSearchEntity {
+  const GameSearchModel({
+    required super.gameId,
+    required super.external,
+    required super.thumb,
+    required super.cheapest,
+    required super.cheapestDealId,
+    required super.steamAppId,
+  });
+
+  factory GameSearchModel.fromMap(Map<String, dynamic> map) {
+    return GameSearchModel(
+      gameId: (map['gameID'] ?? '').toString(),
+      external: (map['external'] ?? '-') as String,
+      thumb: (map['thumb'] ?? '') as String,
+      cheapest: (map['cheapest'] ?? '0') as String,
+      cheapestDealId: (map['cheapestDealID'] ?? '').toString(),
+      steamAppId: map['steamAppID']?.toString(),
     );
   }
 }
