@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/currency_price_formatter.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
 import 'package:khatorgame/features/deals/presentation/pages/deals_detail_page.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 
 class DealsPage extends StatefulWidget {
   const DealsPage({super.key});
@@ -13,6 +15,7 @@ class DealsPage extends StatefulWidget {
 
 class _DealsPageState extends State<DealsPage> {
   final DealsController _controller = Get.put(DealsController());
+  final ProfileController _profileController = Get.find<ProfileController>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
@@ -50,6 +53,8 @@ class _DealsPageState extends State<DealsPage> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final String currencyCode =
+          _profileController.profile.value?.currencyCode ?? 'USD';
       if (_controller.isInitialLoading.value) {
         return const Center(child: CircularProgressIndicator());
       }
@@ -140,13 +145,15 @@ class _DealsPageState extends State<DealsPage> {
                     child: GridView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(12),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.82,
-                      ),
-                      itemCount: _controller.deals.length +
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.82,
+                          ),
+                      itemCount:
+                          _controller.deals.length +
                           (_controller.isLoadingMore.value ? 2 : 0),
                       itemBuilder: (BuildContext context, int index) {
                         if (index >= _controller.deals.length) {
@@ -206,18 +213,18 @@ class _DealsPageState extends State<DealsPage> {
                                         child: Image.network(
                                           deal.thumb,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (
-                                            BuildContext context,
-                                            Object error,
-                                            StackTrace? stackTrace,
-                                          ) =>
-                                              Container(
-                                            color: Colors.grey.shade200,
-                                            alignment: Alignment.center,
-                                            child: const Icon(
-                                              Icons.broken_image_outlined,
-                                            ),
-                                          ),
+                                          errorBuilder:
+                                              (
+                                                BuildContext context,
+                                                Object error,
+                                                StackTrace? stackTrace,
+                                              ) => Container(
+                                                color: Colors.grey.shade200,
+                                                alignment: Alignment.center,
+                                                child: const Icon(
+                                                  Icons.broken_image_outlined,
+                                                ),
+                                              ),
                                         ),
                                       ),
                                     ),
@@ -231,7 +238,9 @@ class _DealsPageState extends State<DealsPage> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.red.shade600,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Text(
                                           '-${deal.savingsAsPercent}%',
@@ -247,9 +256,15 @@ class _DealsPageState extends State<DealsPage> {
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      10,
+                                      8,
+                                      10,
+                                      8,
+                                    ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Expanded(
                                           child: Align(
@@ -266,8 +281,9 @@ class _DealsPageState extends State<DealsPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 6),
-                                        Text(
-                                          '\$${deal.salePrice}',
+                                        _buildPriceText(
+                                          amountText: deal.salePrice,
+                                          currencyCode: currencyCode,
                                           style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,
@@ -275,11 +291,13 @@ class _DealsPageState extends State<DealsPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 2),
-                                        Text(
-                                          '\$${deal.normalPrice}',
+                                        _buildPriceText(
+                                          amountText: deal.normalPrice,
+                                          currencyCode: currencyCode,
                                           style: const TextStyle(
                                             fontSize: 12,
-                                            decoration: TextDecoration.lineThrough,
+                                            decoration:
+                                                TextDecoration.lineThrough,
                                             color: Colors.grey,
                                           ),
                                         ),
@@ -342,18 +360,18 @@ class _DealsPageState extends State<DealsPage> {
                       width: 88,
                       height: 56,
                       fit: BoxFit.cover,
-                      errorBuilder: (
-                        BuildContext context,
-                        Object error,
-                        StackTrace? stackTrace,
-                      ) =>
-                          Container(
-                        width: 88,
-                        height: 56,
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.broken_image_outlined),
-                      ),
+                      errorBuilder:
+                          (
+                            BuildContext context,
+                            Object error,
+                            StackTrace? stackTrace,
+                          ) => Container(
+                            width: 88,
+                            height: 56,
+                            color: Colors.grey.shade200,
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.broken_image_outlined),
+                          ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -368,8 +386,11 @@ class _DealsPageState extends State<DealsPage> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          '\$${game.cheapest}',
+                        _buildPriceText(
+                          amountText: game.cheapest,
+                          currencyCode:
+                              _profileController.profile.value?.currencyCode ??
+                              'USD',
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             color: Colors.green,
@@ -390,6 +411,22 @@ class _DealsPageState extends State<DealsPage> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildPriceText({
+    required String amountText,
+    required String currencyCode,
+    required TextStyle style,
+  }) {
+    return FutureBuilder<String>(
+      future: CurrencyPriceFormatter.formatFromUsd(
+        amountText: amountText,
+        currencyCode: currencyCode,
+      ),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        return Text(snapshot.data ?? '\$$amountText', style: style);
       },
     );
   }
