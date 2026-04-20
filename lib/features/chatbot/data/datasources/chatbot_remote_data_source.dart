@@ -44,7 +44,22 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
       );
       
     } catch (e) {
-      throw Exception('Terjadi kesalahan saat memanggil Gemini API: $e');
+      String errorMessage = 'Terjadi kesalahan tidak terduga saat menghubungi AI: $e';
+      final errorStr = e.toString().toLowerCase();
+      
+      if (errorStr.contains('503')) {
+        errorMessage = 'Server AI saat ini sedang penuh/sibuk (Error 503). Silakan coba lagi beberapa saat.';
+      } else if (errorStr.contains('400')) {
+        errorMessage = 'Permintaan tidak valid (Error 400). Mohon periksa kembali pesan Anda.';
+      } else if (errorStr.contains('401') || errorStr.contains('403')) {
+        errorMessage = 'Ada masalah pada API Key Gemini (Akses Ditolak).';
+      } else if (errorStr.contains('429')) {
+        errorMessage = 'Batas penggunaan AI sudah habis sementara (Error 429). Mohon tunggu sebentar ya.';
+      } else if (errorStr.contains('socketexception') || errorStr.contains('connection timeout') || errorStr.contains('network is unreachable')) {
+        errorMessage = 'Koneksi internet bermasalah. Pastikan jaringan kamu stabil ya.';
+      }
+
+      throw Exception(errorMessage);
     }
   }
 }
