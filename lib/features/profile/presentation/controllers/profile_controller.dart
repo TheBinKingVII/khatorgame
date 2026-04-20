@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:khatorgame/core/services/biometric_auth_service.dart';
 import 'package:khatorgame/features/profile/domain/entities/currency_option_entity.dart';
 import 'package:khatorgame/features/profile/domain/entities/profile_entity.dart';
 import 'package:khatorgame/features/profile/domain/usecases/get_profile_usecase.dart';
@@ -16,12 +17,12 @@ class ProfileController extends GetxController {
     required UpdateNotificationUsecase updateNotificationUsecase,
     required UploadAvatarUsecase uploadAvatarUsecase,
     ImagePicker? imagePicker,
-  })  : _getProfileUsecase = getProfileUsecase,
-        _updateProfileUsecase = updateProfileUsecase,
-        _updateCurrencyUsecase = updateCurrencyUsecase,
-        _updateNotificationUsecase = updateNotificationUsecase,
-        _uploadAvatarUsecase = uploadAvatarUsecase,
-        _imagePicker = imagePicker ?? ImagePicker();
+  }) : _getProfileUsecase = getProfileUsecase,
+       _updateProfileUsecase = updateProfileUsecase,
+       _updateCurrencyUsecase = updateCurrencyUsecase,
+       _updateNotificationUsecase = updateNotificationUsecase,
+       _uploadAvatarUsecase = uploadAvatarUsecase,
+       _imagePicker = imagePicker ?? ImagePicker();
 
   final GetProfileUsecase _getProfileUsecase;
   final UpdateProfileUsecase _updateProfileUsecase;
@@ -29,10 +30,13 @@ class ProfileController extends GetxController {
   final UpdateNotificationUsecase _updateNotificationUsecase;
   final UploadAvatarUsecase _uploadAvatarUsecase;
   final ImagePicker _imagePicker;
+  final BiometricAuthService _biometricService = BiometricAuthService.instance;
 
   final Rxn<ProfileEntity> profile = Rxn<ProfileEntity>();
   final RxBool isLoading = true.obs;
   final RxBool isSaving = false.obs;
+  final RxBool isBiometricEnabled = false.obs;
+  final RxnString biometricStatusMessage = RxnString();
   final RxnString errorMessage = RxnString();
 
   final List<CurrencyOptionEntity> currencies = const <CurrencyOptionEntity>[
@@ -45,7 +49,12 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _loadBiometricStatus();
     loadProfile();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    isBiometricEnabled.value = await _biometricService.isBiometricEnabled();
   }
 
   Future<void> loadProfile() async {
@@ -87,6 +96,38 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<bool> setBiometricEnabled(bool enabled) async {
+    biometricStatusMessage.value = null;
+    if (enabled) {
+      final ProfileEntity? currentProfile = profile.value;
+      if (currentProfile == null) {
+        biometricStatusMessage.value =
+            'Profil belum siap. Coba lagi setelah data profil termuat.';
+        return false;
+      }
+      final bool canUseBiometric = await _biometricService.canUseBiometric();
+      if (!canUseBiometric) {
+        biometricStatusMessage.value =
+            'Perangkat tidak mendukung biometrik atau belum dikonfigurasi.';
+        return false;
+      }
+      final bool saved = await _biometricService.enableForUser(
+        userId: currentProfile.id,
+        userEmail: currentProfile.email,
+      );
+      if (!saved) {
+        biometricStatusMessage.value =
+            'Aktivasi dibatalkan atau verifikasi biometrik gagal.';
+      }
+      isBiometricEnabled.value = saved;
+      return saved;
+    }
+    await _biometricService.disable();
+    isBiometricEnabled.value = false;
+    biometricStatusMessage.value = 'Biometrik dinonaktifkan.';
+    return true;
+  }
+
   Future<bool> pickAndUploadAvatar() async {
     final XFile? pickedFile = await _imagePicker.pickImage(
       source: ImageSource.gallery,
@@ -111,4 +152,3 @@ class ProfileController extends GetxController {
     isSaving.value = false;
   }
 }
-

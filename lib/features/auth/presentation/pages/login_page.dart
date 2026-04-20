@@ -17,6 +17,22 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isBiometricLoading = false;
+  bool _showBiometricButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricAvailability();
+  }
+
+  Future<void> _loadBiometricAvailability() async {
+    final bool hasIdentity = await _authRepository.canShowBiometricLogin();
+    if (!mounted) return;
+    setState(() {
+      _showBiometricButton = hasIdentity;
+    });
+  }
 
   @override
   void dispose() {
@@ -43,13 +59,40 @@ class _LoginPageState extends State<LoginPage> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _onBiometricLogin() async {
+    setState(() {
+      _isBiometricLoading = true;
+    });
+    try {
+      await _authRepository.loginWithBiometric();
       if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+      context.go('/deals');
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBiometricLoading = false;
+        });
+      }
     }
   }
 
@@ -135,6 +178,26 @@ class _LoginPageState extends State<LoginPage> {
                         : const Text('Login'),
                   ),
                 ),
+                if (_showBiometricButton) ...<Widget>[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: (_isLoading || _isBiometricLoading)
+                          ? null
+                          : _onBiometricLogin,
+                      icon: _isBiometricLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.fingerprint),
+                      label: const Text('Login dengan Biometrik'),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => context.push('/register'),
