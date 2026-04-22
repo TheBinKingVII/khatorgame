@@ -7,6 +7,7 @@ import 'package:khatorgame/core/network/api_client_impl.dart';
 import 'package:khatorgame/core/router/app_router.dart';
 import 'package:khatorgame/core/services/local_storage.dart';
 import 'package:khatorgame/core/services/session_service.dart';
+import 'package:khatorgame/core/services/wishlist_reminder_notification_service.dart';
 import 'package:khatorgame/features/chatbot/data/datasources/chatbot_remote_data_source.dart';
 import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository_impl.dart';
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
@@ -52,6 +53,7 @@ Future<void> main() async {
   await LocalStorageService.instance.init();
 
   setupDependencies();
+  await Get.find<WishlistReminderNotificationService>().initialize();
 
   if (SessionService.instance.hasValidSession) {
     try {
@@ -70,6 +72,10 @@ void setupDependencies() {
   // 1. Inisialisasi Core Network
   // Gunakan Get.put dan buang kurung panah ()=>
   Get.put<ApiClient>(ApiClientImpl(Dio()));
+  Get.put<WishlistReminderNotificationService>(
+    WishlistReminderNotificationService(),
+    permanent: true,
+  );
 
   // 2. Inisialisasi Fitur Chatbot
   Get.put<ChatbotRemoteDataSource>(
@@ -94,7 +100,10 @@ void setupDependencies() {
   );
   Get.put<WishlistUsecase>(WishlistUsecase(Get.find<WishlistRepository>()));
   Get.put<WishlistController>(
-    WishlistController(Get.find<WishlistUsecase>()),
+    WishlistController(
+      Get.find<WishlistUsecase>(),
+      Get.find<WishlistReminderNotificationService>(),
+    ),
     permanent: true,
   );
 
@@ -125,6 +134,7 @@ void setupDependencies() {
       updateCurrencyUsecase: Get.find<UpdateCurrencyUsecase>(),
       updateNotificationUsecase: Get.find<UpdateNotificationUsecase>(),
       uploadAvatarUsecase: Get.find<UploadAvatarUsecase>(),
+      wishlistReminderService: Get.find<WishlistReminderNotificationService>(),
     ),
     permanent: true,
   );
