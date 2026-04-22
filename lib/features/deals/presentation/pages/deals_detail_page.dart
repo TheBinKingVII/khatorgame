@@ -128,52 +128,55 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(widget.title),
+        title: Text("Detail Game"),
         actions: <Widget>[
-          Obx(() {
-            final bool isFav = wishlistController.items.any(
-              (WishlistItemEntity e) => e.dealId == widget.dealId,
-            );
-            return IconButton(
-              tooltip: isFav ? 'Hapus dari wishlist' : 'Tambah ke wishlist',
-              onPressed: () async {
-                try {
-                  final String currencyCode =
-                      _profileController.profile.value?.currencyCode ?? 'USD';
-                  final DealsDetailEntity detail = await _detailFuture;
-                  if (!context.mounted) return;
-                  final bool wasFav = wishlistController.items.any(
-                    (WishlistItemEntity e) => e.dealId == widget.dealId,
-                  );
-                  await wishlistController.toggle(
-                    dealId: widget.dealId,
-                    title: detail.title,
-                    price: await _priceLine(detail, currencyCode),
-                    imageUrl: detail.thumb,
-                  );
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        wasFav
-                            ? 'Dihapus dari wishlist'
-                            : 'Ditambahkan ke wishlist',
+          Padding(
+            padding: EdgeInsetsGeometry.only(right: 8),
+            child: Obx(() {
+              final bool isFav = wishlistController.items.any(
+                (WishlistItemEntity e) => e.dealId == widget.dealId,
+              );
+              return IconButton(
+                tooltip: isFav ? 'Hapus dari wishlist' : 'Tambah ke wishlist',
+                onPressed: () async {
+                  try {
+                    final String currencyCode =
+                        _profileController.profile.value?.currencyCode ?? 'USD';
+                    final DealsDetailEntity detail = await _detailFuture;
+                    if (!context.mounted) return;
+                    final bool wasFav = wishlistController.items.any(
+                      (WishlistItemEntity e) => e.dealId == widget.dealId,
+                    );
+                    await wishlistController.toggle(
+                      dealId: widget.dealId,
+                      title: detail.title,
+                      price: await _priceLine(detail, currencyCode),
+                      imageUrl: detail.thumb,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          wasFav
+                              ? 'Dihapus dari wishlist'
+                              : 'Ditambahkan ke wishlist',
+                        ),
                       ),
-                    ),
-                  );
-                } catch (error) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(supabaseUserMessage(error))),
-                  );
-                }
-              },
-              icon: Icon(
-                isFav ? Icons.favorite : Icons.favorite_border,
-                color: isFav ? Colors.redAccent : null,
-              ),
-            );
-          }),
+                    );
+                  } catch (error) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(supabaseUserMessage(error))),
+                    );
+                  }
+                },
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.redAccent : null,
+                ),
+              );
+            }),
+          ),
         ],
       ),
       body: FutureBuilder<DealsDetailEntity>(
