@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:khatorgame/features/profile/domain/entities/profile_entity.dart';
 
@@ -5,11 +7,13 @@ class ProfileHeaderCard extends StatelessWidget {
   const ProfileHeaderCard({
     required this.profile,
     required this.onEditTap,
+    required this.pendingAvatarPath,
     super.key,
   });
 
   final ProfileEntity profile;
   final VoidCallback onEditTap;
+  final String? pendingAvatarPath;
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +29,12 @@ class ProfileHeaderCard extends StatelessWidget {
           CircleAvatar(
             radius: 26,
             backgroundColor: Colors.grey.shade200,
-            backgroundImage:
-                profile.avatarUrl.isEmpty ? null : NetworkImage(profile.avatarUrl),
-            child: profile.avatarUrl.isEmpty
+            backgroundImage: pendingAvatarPath != null
+                ? FileImage(File(pendingAvatarPath!))
+                : (profile.avatarUrl.isEmpty
+                      ? null
+                      : NetworkImage(profile.avatarUrl)),
+            child: pendingAvatarPath == null && profile.avatarUrl.isEmpty
                 ? const Icon(Icons.person_outline, size: 28)
                 : null,
           ),

@@ -75,6 +75,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             ProfileHeaderCard(
               profile: profile,
+              pendingAvatarPath: controller.pendingAvatarPath.value,
               onEditTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(

@@ -42,6 +42,7 @@ class ProfileController extends GetxController {
   final RxBool isBiometricEnabled = false.obs;
   final RxnString biometricStatusMessage = RxnString();
   final RxnString errorMessage = RxnString();
+  final RxnString pendingAvatarPath = RxnString();
 
   final List<CurrencyOptionEntity> currencies = const <CurrencyOptionEntity>[
     CurrencyOptionEntity(code: 'USD', label: 'US Dollar', symbol: '\$'),
@@ -138,21 +139,39 @@ class ProfileController extends GetxController {
     return true;
   }
 
-  Future<bool> pickAndUploadAvatar() async {
+  Future<bool> pickAvatarPath() async {
     final XFile? pickedFile = await _imagePicker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1080,
       imageQuality: 85,
     );
-    if (pickedFile == null) return false;
+    if (pickedFile == null) {
+      return false;
+    }
+    pendingAvatarPath.value = pickedFile.path;
+    return true;
+  }
 
+  Future<bool> uploadAvatar(String filePath) async {
     isSaving.value = true;
     try {
-      profile.value = await _uploadAvatarUsecase(filePath: pickedFile.path);
+      profile.value = await _uploadAvatarUsecase(filePath: filePath);
       return true;
     } finally {
       isSaving.value = false;
     }
+  }
+
+  Future<bool> uploadPendingAvatar() async {
+    final String? pendingPath = pendingAvatarPath.value;
+    if (pendingPath == null || pendingPath.isEmpty) {
+      return false;
+    }
+    final bool changed = await uploadAvatar(pendingPath);
+    if (changed) {
+      pendingAvatarPath.value = null;
+    }
+    return changed;
   }
 
   void clearState() {
@@ -160,6 +179,7 @@ class ProfileController extends GetxController {
     errorMessage.value = null;
     isLoading.value = false;
     isSaving.value = false;
+    pendingAvatarPath.value = null;
     _wishlistReminderService.updateNotificationsEnabled(false);
   }
 }
