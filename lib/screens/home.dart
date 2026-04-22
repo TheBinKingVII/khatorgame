@@ -42,10 +42,7 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(Icons.smart_toy_outlined),
             label: 'Chatbot',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.wifi),
-            label: 'Internet Cafe',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.wifi), label: 'Cafe'),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Profile',

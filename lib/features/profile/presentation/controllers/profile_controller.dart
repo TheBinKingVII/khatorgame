@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:khatorgame/core/services/biometric_auth_service.dart';
+import 'package:khatorgame/core/services/wishlist_reminder_notification_service.dart';
 import 'package:khatorgame/features/profile/domain/entities/currency_option_entity.dart';
 import 'package:khatorgame/features/profile/domain/entities/profile_entity.dart';
 import 'package:khatorgame/features/profile/domain/usecases/get_profile_usecase.dart';
@@ -16,12 +17,14 @@ class ProfileController extends GetxController {
     required UpdateCurrencyUsecase updateCurrencyUsecase,
     required UpdateNotificationUsecase updateNotificationUsecase,
     required UploadAvatarUsecase uploadAvatarUsecase,
+    required WishlistReminderNotificationService wishlistReminderService,
     ImagePicker? imagePicker,
   }) : _getProfileUsecase = getProfileUsecase,
        _updateProfileUsecase = updateProfileUsecase,
        _updateCurrencyUsecase = updateCurrencyUsecase,
        _updateNotificationUsecase = updateNotificationUsecase,
        _uploadAvatarUsecase = uploadAvatarUsecase,
+       _wishlistReminderService = wishlistReminderService,
        _imagePicker = imagePicker ?? ImagePicker();
 
   final GetProfileUsecase _getProfileUsecase;
@@ -29,6 +32,7 @@ class ProfileController extends GetxController {
   final UpdateCurrencyUsecase _updateCurrencyUsecase;
   final UpdateNotificationUsecase _updateNotificationUsecase;
   final UploadAvatarUsecase _uploadAvatarUsecase;
+  final WishlistReminderNotificationService _wishlistReminderService;
   final ImagePicker _imagePicker;
   final BiometricAuthService _biometricService = BiometricAuthService.instance;
 
@@ -62,6 +66,9 @@ class ProfileController extends GetxController {
     errorMessage.value = null;
     try {
       profile.value = await _getProfileUsecase();
+      await _wishlistReminderService.updateNotificationsEnabled(
+        profile.value?.notificationsEnabled ?? false,
+      );
     } catch (error) {
       errorMessage.value = error.toString();
     } finally {
@@ -91,6 +98,9 @@ class ProfileController extends GetxController {
     isSaving.value = true;
     try {
       profile.value = await _updateNotificationUsecase(enabled: enabled);
+      await _wishlistReminderService.updateNotificationsEnabled(
+        profile.value?.notificationsEnabled ?? enabled,
+      );
     } finally {
       isSaving.value = false;
     }
@@ -150,5 +160,6 @@ class ProfileController extends GetxController {
     errorMessage.value = null;
     isLoading.value = false;
     isSaving.value = false;
+    _wishlistReminderService.updateNotificationsEnabled(false);
   }
 }

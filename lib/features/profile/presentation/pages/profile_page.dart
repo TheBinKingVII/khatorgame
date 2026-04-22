@@ -86,16 +86,6 @@ class ProfilePage extends StatelessWidget {
             ProfileMenuSection(
               children: <Widget>[
                 ProfileMenuTile(
-                  icon: Icons.edit_location_alt_outlined,
-                  title: 'Address Book',
-                  subtitle: 'Manage your saved addresses',
-                ),
-                ProfileMenuTile(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Order History',
-                  subtitle: 'View your past orders',
-                ),
-                ProfileMenuTile(
                   icon: Icons.attach_money_outlined,
                   title: 'Currency',
                   subtitle: profile.currencyCode,

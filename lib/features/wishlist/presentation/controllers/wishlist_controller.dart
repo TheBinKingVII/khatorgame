@@ -1,11 +1,13 @@
 import 'package:get/get.dart';
+import 'package:khatorgame/core/services/wishlist_reminder_notification_service.dart';
 import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dart';
 import 'package:khatorgame/features/wishlist/domain/usecases/wishlist_usecase.dart';
 
 class WishlistController extends GetxController {
-  WishlistController(this._usecase);
+  WishlistController(this._usecase, this._wishlistReminderService);
 
   final WishlistUsecase _usecase;
+  final WishlistReminderNotificationService _wishlistReminderService;
 
   final RxList<WishlistItemEntity> items = <WishlistItemEntity>[].obs;
   final RxBool syncBusy = false.obs;
@@ -18,6 +20,7 @@ class WishlistController extends GetxController {
 
   Future<void> refreshFromLocal() async {
     items.assignAll(await _usecase.getLocalItems());
+    await _wishlistReminderService.updateWishlistCount(items.length);
   }
 
   Future<void> syncFromRemote() async {
@@ -56,5 +59,6 @@ class WishlistController extends GetxController {
 
   void clearState() {
     items.clear();
+    _wishlistReminderService.updateWishlistCount(0);
   }
 }
