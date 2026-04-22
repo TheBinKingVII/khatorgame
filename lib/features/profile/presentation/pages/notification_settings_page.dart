@@ -16,7 +16,10 @@ class NotificationSettingsPage extends StatelessWidget {
       }
 
       return Scaffold(
-        appBar: AppBar(title: const Text('Notifications')),
+        appBar: AppBar(
+          title: const Text('Notifications'),
+          automaticallyImplyLeading: false,
+        ),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: <Widget>[
@@ -40,4 +43,3 @@ class NotificationSettingsPage extends StatelessWidget {
     });
   }
 }
-

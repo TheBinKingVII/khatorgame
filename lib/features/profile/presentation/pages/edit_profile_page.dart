@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -45,10 +48,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   CircleAvatar(
                     radius: 52,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage: profile.avatarUrl.isEmpty
-                        ? null
-                        : NetworkImage(profile.avatarUrl),
-                    child: profile.avatarUrl.isEmpty
+                    backgroundImage: _controller.pendingAvatarPath.value != null
+                        ? FileImage(File(_controller.pendingAvatarPath.value!))
+                        : (profile.avatarUrl.isEmpty
+                              ? null
+                              : NetworkImage(profile.avatarUrl)),
+                    child:
+                        _controller.pendingAvatarPath.value == null &&
+                            profile.avatarUrl.isEmpty
                         ? const Icon(Icons.person_outline, size: 42)
                         : null,
                   ),
@@ -59,15 +66,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       onPressed: _controller.isSaving.value
                           ? null
                           : () async {
-                              final bool changed =
-                                  await _controller.pickAndUploadAvatar();
-                              if (changed && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Foto profil diperbarui'),
-                                  ),
-                                );
-                              }
+                              await _controller.pickAvatarPath();
                             },
                       style: FilledButton.styleFrom(
                         shape: const CircleBorder(),
@@ -103,12 +102,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onPressed: _controller.isSaving.value
                   ? null
                   : () async {
-                      await _controller.saveFullName(_nameController.text);
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Profil diperbarui')),
-                      );
-                      Navigator.of(context).pop();
+                      final ScaffoldMessengerState messenger =
+                          ScaffoldMessenger.of(context);
+                      final NavigatorState navigator = Navigator.of(context);
+                      try {
+                        await _controller.saveFullName(_nameController.text);
+                        await _controller.uploadPendingAvatar();
+                        if (!context.mounted) return;
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Profil berhasil disimpan'),
+                          ),
+                        );
+                        navigator.pop();
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(supabaseUserMessage(error))),
+                        );
+                      }
                     },
               child: _controller.isSaving.value
                   ? const SizedBox(

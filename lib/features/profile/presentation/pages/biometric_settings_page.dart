@@ -60,7 +60,10 @@ class _BiometricSettingsPageState extends State<BiometricSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Biometric Login')),
+      appBar: AppBar(
+        title: const Text('Biometric Login'),
+        automaticallyImplyLeading: false,
+      ),
       body: _checkingSupport
           ? const Center(child: CircularProgressIndicator())
           : Obx(() {
@@ -96,7 +99,8 @@ class _BiometricSettingsPageState extends State<BiometricSettingsPage> {
                     const Text(
                       'Profil belum tersedia. Buka ulang halaman setelah profil berhasil dimuat.',
                     ),
-                  if (_controller.biometricStatusMessage.value != null) ...<Widget>[
+                  if (_controller.biometricStatusMessage.value !=
+                      null) ...<Widget>[
                     const SizedBox(height: 8),
                     Text(_controller.biometricStatusMessage.value!),
                   ],

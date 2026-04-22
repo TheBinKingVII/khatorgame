@@ -75,6 +75,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             ProfileHeaderCard(
               profile: profile,
+              pendingAvatarPath: controller.pendingAvatarPath.value,
               onEditTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -138,18 +139,10 @@ class ProfilePage extends StatelessWidget {
             const ProfileMenuSection(
               children: <Widget>[
                 ProfileMenuTile(
-                  icon: Icons.contact_support_outlined,
-                  title: 'Contact Us',
-                ),
-                ProfileMenuTile(icon: Icons.help_outline, title: 'Get Help'),
-                ProfileMenuTile(
                   icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy Policy',
+                  title: 'Testimonial',
                 ),
-                ProfileMenuTile(
-                  icon: Icons.gpp_good_outlined,
-                  title: 'Terms & Conditions',
-                ),
+                ProfileMenuTile(icon: Icons.gpp_good_outlined, title: 'Advice'),
               ],
             ),
             Padding(
