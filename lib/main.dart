@@ -165,7 +165,9 @@ void setupDependencies() {
       remoteDataSource: Get.find<InternetcafeRemoteDataSource>(),
     ),
   );
-  Get.put<InternetcafeUsecase>(InternetcafeUsecase(Get.find<InternetcafeRepository>()));
+  Get.put<InternetcafeUsecase>(
+    InternetcafeUsecase(Get.find<InternetcafeRepository>()),
+  );
   Get.put<InternetcafeController>(
     InternetcafeController(Get.find<InternetcafeUsecase>()),
     permanent: true,
