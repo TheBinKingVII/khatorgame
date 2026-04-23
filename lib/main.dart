@@ -41,9 +41,11 @@ import 'package:khatorgame/features/wishlist/domain/repositories/wishlist_reposi
 import 'package:khatorgame/features/wishlist/domain/usecases/wishlist_usecase.dart';
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
   await dotenv.load(fileName: '.env');
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
