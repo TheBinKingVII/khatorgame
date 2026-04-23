@@ -44,9 +44,10 @@ class MinigamesController extends GetxController {
 
       final String voucherCode = await usecase.claimVoucher(currentUserId);
       
-      // Update UI langsung secara reaktif
+      // Update UI langsung secara reaktif dan load ulang data dari storage
+      // supaya format waktu (code#timestamp) ikut terbaca masuk ke memori List
       hasClaimedToday.value = true;
-      collectedVouchers.add(voucherCode);
+      await loadGameData();
 
       return voucherCode;
     } catch (e) {
