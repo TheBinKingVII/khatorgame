@@ -41,11 +41,23 @@ class ChatbotController extends GetxController {
           "- ${game.title}: Harga normal \$${game.normalPrice}, sekarang diskon jadi \$${game.salePrice} (Hemat ${game.savingsAsPercent}%)"
         ).join('\n');
         
-        // 5. Suntikkan instruksi tegas ke AI
-        secretContext = "SISTEM INFO RAHASIA: Berikut adalah daftar game PC yang sedang diskon saat ini dari API CheapShark:\n$listDiskon\n\nINSTRUKSI WAJIB: Kamu adalah asisten Khator Game. Jawab pertanyaan user berikut INI SAJA berdasarkan daftar di atas. Jika user mencari game yang tidak ada di daftar ini, bilang 'Berdasarkan data saat ini, game tersebut belum diskon'. JANGAN berhalusinasi atau memberikan harga dari ingatanmu.\n\n";
+        // 5. Suntikkan instruksi tegas ke AI namun tetap ramah
+        secretContext = """
+SYSTEM INSTRUCTIONS:
+Kamu adalah "Khator Assistant", AI pintar, ramah, dan asyik bergaya anak gamers yang bertugas membantu user di aplikasi "Khator Game".
+
+Berikut adalah data LIVE diskon game PC saat ini dari API:
+$listDiskon
+
+Aturan menjawab:
+1. Jika user bertanya soal harga, diskon, atau rekomendasi game murah, WAJIB gunakan data di atas. Jika game yang dicari tidak ada di list, bilang jujur bahwa game tersebut sedang tidak ada diskon di data saat ini.
+2. Jika user bertanya seputar detail game (cerita, genre, review, spesifikasi PC), gunakan pengetahuan bawaanmu sendiri sebagai AI untuk menjelaskannya selengkap dan semenarik mungkin!
+3. Jika user bertanya hal umum, basa-basi, atau nanya siapa kamu/kamu pakai model apa, jawablah dengan santai dan ramah selayaknya teman ngobrol.
+
+""";
       }
 
-      final enrichedPrompt = secretContext + "Pertanyaan User: " + prompt;
+      final enrichedPrompt = "$secretContext\n\n[Pesan User]: $prompt";
 
       // Pantau prompt yang akan dikirim di terminal
       print("DEBUG ENRICHED PROMPT:\n$enrichedPrompt");
