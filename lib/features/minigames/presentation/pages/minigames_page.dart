@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/features/minigames/presentation/controllers/minigames_controller.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class FallingItem {
   final String emoji;
@@ -203,39 +205,100 @@ class _MinigamesPageState extends State<MinigamesPage> {
   }
 
   void _showSuccessWinDialog(String voucherCode) {
+    final nowUtc = DateTime.now().toUtc();
+    final timezones = {
+      'WIB (Jakarta)': tz.getLocation('Asia/Jakarta'),
+      'WITA (Makassar)': tz.getLocation('Asia/Makassar'),
+      'WIT (Jayapura)': tz.getLocation('Asia/Jayapura'),
+      'London (UK)': tz.getLocation('Europe/London'),
+    };
+    
+    String selectedZone = 'WIB (Jakarta)';
+
+    String formatTime(DateTime dt, tz.Location loc) {
+      final tzd = tz.TZDateTime.from(dt, loc);
+      return "${tzd.hour.toString().padLeft(2, '0')}:${tzd.minute.toString().padLeft(2, '0')}";
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.green[800],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('MENANG! 🏆', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Selamat! Kamu berhasil mendapatkan Voucher Steam Wallet harian!',
-                textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.circular(10)),
-              child: Text(voucherCode,
-                  style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            backgroundColor: Colors.green[800],
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('MENANG! 🏆', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text('Selamat! Kamu berhasil mendapatkan Voucher Steam!',
+                    textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.circular(10)),
+                  child: Text(voucherCode,
+                      style: const TextStyle(color: Colors.amber, fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 20),
+                const Text('Cek Konversi Waktu Klaim:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8)),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(8)),
+                        child: DropdownButton<String>(
+                          value: selectedZone,
+                          dropdownColor: Colors.green[900],
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          underline: const SizedBox(),
+                          items: timezones.keys.map((String key) {
+                            return DropdownMenuItem<String>(
+                              value: key,
+                              child: Text(key, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              setStateDialog(() {
+                                selectedZone = newValue;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        formatTime(nowUtc, timezones[selectedZone]!),
+                        style: const TextStyle(color: Colors.amber, fontSize: 28, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text('Voucher sudah tersimpan otomatis di database.',
+                    style: TextStyle(color: Colors.white38, fontSize: 10)),
+              ],
             ),
-            const SizedBox(height: 10),
-            const Text('Voucher sudah tersimpan otomatis di database.',
-                style: TextStyle(color: Colors.white38, fontSize: 10)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() => _gameStarted = false);
-            },
-            child: const Text('MANTAP!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() => _gameStarted = false);
+                },
+                child: const Text('MANTAP!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        }
       ),
     );
   }
@@ -258,43 +321,165 @@ class _MinigamesPageState extends State<MinigamesPage> {
     }
   }
 
-  // Tampilkan daftar semua voucher yang pernah didapat
+  // Tampilkan daftar semua voucher yang pernah didapat beserta konversi waktunya
   void _showInventoryDialog() {
+    String selectedZone = 'WIB (Jakarta)';
+    int? copiedIndex;
+    final Map<String, tz.Location> zoneOffsets = {
+      'WIB (Jakarta)': tz.getLocation('Asia/Jakarta'),
+      'WITA (Makassar)': tz.getLocation('Asia/Makassar'),
+      'WIT (Jayapura)': tz.getLocation('Asia/Jayapura'),
+      'London (UK)': tz.getLocation('Europe/London'),
+    };
+
+    String formatTime(DateTime utcTime, tz.Location loc) {
+      final dt = tz.TZDateTime.from(utcTime, loc);
+      final ymd = "${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}";
+      final hms = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+      return "$ymd - $hms";
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2C3E),
-        title: const Text('Koleksi Voucher Kamu', style: TextStyle(color: Colors.white)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Obx(() => _controller.collectedVouchers.isEmpty
-              ? const Text('Belum ada voucher bray. Main dulu!', style: TextStyle(color: Colors.white54))
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _controller.collectedVouchers.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(_controller.collectedVouchers[index], style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                          const Icon(Icons.copy, size: 16, color: Colors.white24),
-                        ],
-                      ),
-                    );
-                  },
-                )),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => _resetGameData(context), // <--- Pakai konteks dialog ini
-            child: const Text('RESET DATA', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
-          ),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('TUTUP', style: TextStyle(color: Colors.blueAccent))),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF2C2C3E),
+            title: const Text('Koleksi Voucher', style: TextStyle(color: Colors.white)),
+            content: SizedBox(
+              width: double.maxFinite,
+              // Kasih batasan max biar nggak overflow ke luar layar
+              height: 400,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(8)),
+                    child: DropdownButton<String>(
+                      value: selectedZone,
+                      dropdownColor: Colors.deepPurple[900],
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                      underline: const SizedBox(),
+                      items: zoneOffsets.keys.map((String key) {
+                        return DropdownMenuItem<String>(
+                          value: key,
+                          child: Text(key, overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setStateDialog(() {
+                            selectedZone = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: Obx(() {
+                      if (_controller.collectedVouchers.isEmpty) {
+                        return const Center(
+                          child: Text('Belum ada voucher bray. Main dulu!', style: TextStyle(color: Colors.white54)),
+                        );
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _controller.collectedVouchers.length,
+                        itemBuilder: (context, index) {
+                          final item = _controller.collectedVouchers[index];
+                          // Pecah string berformat "KODE#TIMESTAMP_UTC"
+                          final parts = item.split('#');
+                          final code = parts[0];
+                          String timeDisplay = "Waktu klaim tidak tercatat (data lama)";
+                          
+                          if (parts.length > 1) {
+                            final utcTime = DateTime.tryParse(parts[1]);
+                            if (utcTime != null) {
+                              timeDisplay = formatTime(utcTime, zoneOffsets[selectedZone]!);
+                            }
+                          }
+
+                          return InkWell(
+                            onTap: () async {
+                              await Clipboard.setData(ClipboardData(text: code));
+                              setStateDialog(() {
+                                copiedIndex = index;
+                              });
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (context.mounted) {
+                                  setStateDialog(() {
+                                    if (copiedIndex == index) copiedIndex = null;
+                                  });
+                                }
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: copiedIndex == index ? Colors.green[800] : Colors.black26, 
+                                borderRadius: BorderRadius.circular(8)
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          copiedIndex == index ? "Tersalin ke Clipboard! 📋" : code, 
+                                          overflow: TextOverflow.ellipsis, 
+                                          style: TextStyle(
+                                            color: copiedIndex == index ? Colors.white : Colors.amber, 
+                                            fontWeight: FontWeight.bold, 
+                                            fontSize: 16
+                                          )
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        copiedIndex == index ? Icons.check_circle : Icons.copy, 
+                                        size: 16, 
+                                        color: copiedIndex == index ? Colors.white : Colors.blueAccent
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time, size: 12, color: Colors.white38),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(timeDisplay, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => _resetGameData(context), // <--- Pakai konteks dialog ini
+                child: const Text('RESET DATA', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+              ),
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('TUTUP', style: TextStyle(color: Colors.blueAccent))),
+            ],
+          );
+        }
       ),
     );
   }
@@ -364,19 +549,19 @@ class _MinigamesPageState extends State<MinigamesPage> {
         children: [
           const Icon(Icons.videogame_asset, size: 80, color: Colors.amber),
           const SizedBox(height: 10),
-          const Text('Minigame Hadiah Steam',
+          const Text('Minigame Berhadiah',
               style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           _buildInstructionItem(Icons.edgesensor_low, 'Miringkan HP', 'Gerakkan keranjang ke kiri/kanan.'),
           _buildInstructionItem(Icons.pan_tool, 'Tutup Sensor Atas', 'Aktifkan Magnet & Shield (3 detik).'),
-          _buildInstructionItem(Icons.star, 'Kumpulkan $_targetScore Poin', 'Dapatkan 1 Voucher Steam per hari.'),
+          _buildInstructionItem(Icons.star, 'Kumpulkan $_targetScore Poin', 'Dapatkan 1 Voucher Steam Wallet per hari.'),
           const Spacer(),
           Obx(() {
             if (_controller.hasClaimedToday.value) {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya bro.',
+                child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya',
                     textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
               );
             } else {
