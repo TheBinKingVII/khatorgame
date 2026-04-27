@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
 import '../../domain/entities/chatbot_entity.dart';
@@ -18,6 +19,17 @@ class ChatbotController extends GetxController {
     isLoading.value = true;
 
     try {
+      // 1. Cek Koneksi Internet Dulu
+      try {
+        final result = await InternetAddress.lookup('google.com')
+            .timeout(const Duration(seconds: 3));
+        if (result.isEmpty || result[0].rawAddress.isEmpty) {
+          throw Exception('Koneksi terputus. Pastikan jaringan internet stabil!');
+        }
+      } catch (_) {
+        throw Exception('Koneksi terputus. Pastikan jaringan internet stabil!');
+      }
+
       String secretContext = "";
 
       // 2. Panggil DealsController yang sudah terhubung ke API
