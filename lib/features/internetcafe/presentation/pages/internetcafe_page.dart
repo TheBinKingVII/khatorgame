@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../controllers/internetcafe_controller.dart';
 import '../../domain/entities/internetcafe_entity.dart';
 
@@ -48,6 +47,18 @@ class InternetcafePage extends StatelessWidget {
                     controller.errorMessage.value,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => controller.fetchLocationAndCafes(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Coba Lagi'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
                 ],
               ),
@@ -106,6 +117,16 @@ class InternetcafePage extends StatelessWidget {
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.khatorgame',
+                  ),
+                  PolylineLayer(
+                    polylines: [
+                      if (controller.routePoints.isNotEmpty)
+                        Polyline(
+                          points: controller.routePoints.toList(),
+                          strokeWidth: 5.0,
+                          color: Colors.blueAccent,
+                        ),
+                    ],
                   ),
                   MarkerLayer(markers: mapMarkers),
                 ],
@@ -229,26 +250,55 @@ class InternetcafePage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.navigation),
-                  label: const Text('Mulai Navigasi (Google Maps)', style: TextStyle(fontSize: 16)),
-                  onPressed: () async {
-                    // LINK GOOGLE MAPS UNTUK RUTE NAVIGASI (DIRECTION)
-                    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}');
-                    
-                    try {
-                      // Bypass canLaunchUrl untuk menghindari error intent visibility di Android 11+
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    } catch (e) {
-                      Get.snackbar('Error', 'Gagal membuka Google Maps');
-                    }
-                  },
-                ),
+                child: Obx(() {
+                  final InternetcafeController controller = Get.find<InternetcafeController>();
+                  return ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: controller.isFetchingRoute.value 
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.route),
+                    label: Text(
+                      controller.isFetchingRoute.value ? 'Mencari Rute...' : 'Tampilkan Rute di Peta', 
+                      style: const TextStyle(fontSize: 16)
+                    ),
+                    onPressed: controller.isFetchingRoute.value ? null : () async {
+                      // Tutup pop-up LEBIH DULU agar SnackBar tidak tertutup animasi
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      
+                      // Geser kamera ke agak tengah antara user & warnet
+                      mapController.move(
+                        LatLng(cafe.latitude, cafe.longitude), 
+                        14.0 
+                      );
+                      
+                      // Request API OSRM untuk menggambar garis rute
+                      try {
+                        await controller.fetchRouteTo(cafe.latitude, cafe.longitude);
+                      } catch (e) {
+                        // Tampilkan error menggunakan ScaffoldMessenger bawaan Flutter
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                e.toString().replaceAll('Exception: ', ''),
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                              margin: const EdgeInsets.all(16),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  );
+                }),
               ),
             ],
           ),
