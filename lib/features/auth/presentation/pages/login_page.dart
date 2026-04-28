@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/input_validator.dart';
 import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginPage extends StatefulWidget {
@@ -120,25 +121,18 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  inputFormatters: InputValidator.emailFormatters,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Email wajib diisi';
-                    }
-                    final RegExp regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-                    if (!regex.hasMatch(value.trim())) {
-                      return 'Format email tidak valid';
-                    }
-                    return null;
-                  },
+                  validator: InputValidator.validateEmail,
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  inputFormatters: InputValidator.passwordFormatters,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: const OutlineInputBorder(),
@@ -155,15 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password wajib diisi';
-                    }
-                    if (value.length < 8) {
-                      return 'Minimal 8 karakter';
-                    }
-                    return null;
-                  },
+                  validator: InputValidator.validatePassword,
                 ),
                 const SizedBox(height: 20),
                 SizedBox(

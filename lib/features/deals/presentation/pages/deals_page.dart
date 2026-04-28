@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/utils/currency_price_formatter.dart';
+import 'package:khatorgame/core/utils/input_validator.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
 import 'package:khatorgame/features/deals/presentation/pages/deals_detail_page.dart';
@@ -68,7 +69,24 @@ class _DealsPageState extends State<DealsPage> {
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
       child: TextField(
         controller: _searchController,
-        onChanged: _controller.onSearchChanged,
+        inputFormatters: InputValidator.searchFormatters,
+        onChanged: (String value) {
+          final String? validationMessage = InputValidator.validateSearchQuery(
+            value,
+          );
+          if (validationMessage != null) {
+            _searchController.text = '';
+            _searchController.selection = const TextSelection.collapsed(
+              offset: 0,
+            );
+            _controller.clearSearch();
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(validationMessage)));
+            return;
+          }
+          _controller.onSearchChanged(value);
+        },
         decoration: InputDecoration(
           hintText: 'Cari game...',
           prefixIcon: const Icon(Icons.search),
