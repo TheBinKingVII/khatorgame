@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
@@ -12,8 +15,38 @@ import 'package:khatorgame/features/profile/presentation/widgets/profile_header_
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_section.dart';
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_tile.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  Timer? _connectivityTimer;
+
+  @override
+  void dispose() {
+    _connectivityTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startConnectivityCheck(ProfileController controller) {
+    _connectivityTimer?.cancel();
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      try {
+        final result = await InternetAddress.lookup('google.com').timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          timer.cancel();
+          if (mounted) {
+            controller.loadProfile();
+          }
+        }
+      } catch (_) {
+        // Masih offline, lanjut polling
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +60,40 @@ class ProfilePage extends StatelessWidget {
 
       if (controller.errorMessage.value != null &&
           controller.profile.value == null) {
+        
+        // Auto-refresh: start timer if not active
+        if (_connectivityTimer == null || !_connectivityTimer!.isActive) {
+          _startConnectivityCheck(controller);
+        }
+
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Gagal memuat profil.\n${controller.errorMessage.value}',
-              textAlign: TextAlign.center,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+                const SizedBox(height: 16),
+                const Text(
+                  'Koneksi Terputus',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Menunggu koneksi internet pulih untuk memuat profil...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[600], height: 1.4),
+                ),
+                const SizedBox(height: 32),
+                CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+              ],
             ),
           ),
         );
       }
+
+      // Matikan timer jika load sudah sukses
+      _connectivityTimer?.cancel();
 
       final profile = controller.profile.value;
       if (profile == null) {
@@ -47,32 +104,54 @@ class ProfilePage extends StatelessWidget {
         onRefresh: controller.loadProfile,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: 12, bottom: 16),
+          padding: const EdgeInsets.only(bottom: 16),
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: <Widget>[
-                  const Expanded(
-                    child: Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+            // ─── Gradient Header ─────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: IconButton(
-                      icon: const Icon(Icons.more_horiz),
-                      onPressed: () {},
-                    ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Profil Saya',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      Text(
+                        'Kelola akun dan preferensi',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
             ProfileHeaderCard(
               profile: profile,
               pendingAvatarPath: controller.pendingAvatarPath.value,
