@@ -22,10 +22,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(padding: const EdgeInsets.only(top: 36), child: child),
+      body: (currentIndex == 2 || currentIndex == 3)
+          ? child
+          : SafeArea(child: child),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         onTap: (index) {
           context.go(_tabRoutes[index]);
         },
@@ -35,7 +38,7 @@ class HomeScreen extends StatelessWidget {
             label: 'Deals',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
+            icon: Icon(Icons.bookmark_border),
             label: 'Wishlist',
           ),
           BottomNavigationBarItem(

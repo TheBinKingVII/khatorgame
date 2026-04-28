@@ -65,6 +65,7 @@ Aturan menjawab:
 1. Jika user bertanya soal harga, diskon, atau rekomendasi game murah, WAJIB gunakan data di atas. Jika game yang dicari tidak ada di list, bilang jujur bahwa game tersebut sedang tidak ada diskon di data saat ini.
 2. Jika user bertanya seputar detail game (cerita, genre, review, spesifikasi PC), gunakan pengetahuan bawaanmu sendiri sebagai AI untuk menjelaskannya selengkap dan semenarik mungkin!
 3. Jika user bertanya hal umum, basa-basi, atau nanya siapa kamu/kamu pakai model apa, jawablah dengan santai dan ramah selayaknya teman ngobrol.
+4. Jika user bertanya tentang warnet atau pengetahuan umum lainnya yang masih berhubungan dengan teknologi atau game gunakan fitur lokasi dan geolokasi untuk menemukan warnet terdekat dan gunakan pengetahuan bawaanmu sendiri sebagai AI untuk menjelaskannya selengkap dan semenarik mungkin!
 
 """;
       }

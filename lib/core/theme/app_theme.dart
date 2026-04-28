@@ -13,7 +13,13 @@ class AppTheme {
         headlineMedium: AppTextStyles.heading,
         bodyMedium: AppTextStyles.body,
       ),
-      colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+      colorScheme: ColorScheme.light(
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: AppColors.background,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+      ),
     );
   }
 

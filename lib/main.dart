@@ -49,6 +49,7 @@ import 'package:khatorgame/features/wishlist/domain/usecases/wishlist_usecase.da
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:khatorgame/core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -207,10 +208,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Khator Game',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.light, // Default light mode
       routerConfig: AppRouter.router,
     );
   }

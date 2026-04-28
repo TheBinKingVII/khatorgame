@@ -128,7 +128,9 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text("Detail Game"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Detail Game", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: <Widget>[
           Padding(
             padding: EdgeInsetsGeometry.only(right: 8),
@@ -171,8 +173,8 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                   }
                 },
                 icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav ? Colors.redAccent : null,
+                  isFav ? Icons.bookmark : Icons.bookmark_border,
+                  color: isFav ? const Color.fromARGB(255, 148, 143, 147) : null,
                 ),
               );
             }),
@@ -281,6 +283,9 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                                     detail.metacriticLink,
                                   ),
                                   icon: const Icon(Icons.open_in_new),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                  ),
                                   label: const Text('Buka Halaman Metacritic'),
                                 )
                               : const SizedBox.shrink(),
