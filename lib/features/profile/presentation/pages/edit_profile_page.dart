@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/input_validator.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 
@@ -81,6 +82,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 20),
             TextField(
               controller: _nameController,
+              inputFormatters: InputValidator.nameFormatters,
               decoration: const InputDecoration(
                 labelText: 'Nama Lengkap',
                 border: OutlineInputBorder(),
@@ -105,6 +107,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       final ScaffoldMessengerState messenger =
                           ScaffoldMessenger.of(context);
                       final NavigatorState navigator = Navigator.of(context);
+                      final String? validationMessage =
+                          InputValidator.validateFullName(_nameController.text);
+                      if (validationMessage != null) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(validationMessage)),
+                        );
+                        return;
+                      }
                       try {
                         await _controller.saveFullName(_nameController.text);
                         await _controller.uploadPendingAvatar();

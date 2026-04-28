@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/input_validator.dart';
 import '../controllers/chatbot_controller.dart';
 
 class ChatbotPage extends StatelessWidget {
@@ -7,12 +8,17 @@ class ChatbotPage extends StatelessWidget {
 
   ChatbotPage({Key? key}) : super(key: key);
 
-  void _handleSend(ChatbotController controller) {
-    final text = _textController.text;
-    if (text.isNotEmpty) {
-      controller.sendMessage(text);
-      _textController.clear();
+  void _handleSend(BuildContext context, ChatbotController controller) {
+    final String text = _textController.text.trim();
+    final String? validationMessage = InputValidator.validateChatMessage(text);
+    if (validationMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(validationMessage)));
+      return;
     }
+    controller.sendMessage(text);
+    _textController.clear();
   }
 
   @override
@@ -44,7 +50,7 @@ class ChatbotPage extends StatelessWidget {
             : const SizedBox.shrink()),
 
           // Input Field
-          _buildInputArea(controller),
+          _buildInputArea(context, controller),
         ],
       ),
     );
@@ -75,7 +81,7 @@ class ChatbotPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInputArea(ChatbotController controller) {
+  Widget _buildInputArea(BuildContext context, ChatbotController controller) {
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -87,17 +93,18 @@ class ChatbotPage extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: _textController,
+              inputFormatters: InputValidator.chatFormatters,
               decoration: InputDecoration(
                 hintText: 'Tanya soal game atau diskon...',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               ),
-              onSubmitted: (_) => _handleSend(controller),
+              onSubmitted: (_) => _handleSend(context, controller),
             ),
           ),
           const SizedBox(width: 10),
           IconButton(
-            onPressed: () => _handleSend(controller),
+            onPressed: () => _handleSend(context, controller),
             icon: const Icon(Icons.send, color: Colors.deepPurple),
           ),
         ],

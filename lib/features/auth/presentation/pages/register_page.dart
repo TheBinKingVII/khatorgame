@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
+import 'package:khatorgame/core/utils/input_validator.dart';
 import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -86,40 +87,29 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: _nameController,
+                  inputFormatters: InputValidator.nameFormatters,
                   decoration: const InputDecoration(
                     labelText: 'Nama lengkap',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Nama wajib diisi';
-                    }
-                    return null;
-                  },
+                  validator: InputValidator.validateFullName,
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  inputFormatters: InputValidator.emailFormatters,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Email wajib diisi';
-                    }
-                    final RegExp regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-                    if (!regex.hasMatch(value.trim())) {
-                      return 'Format email tidak valid';
-                    }
-                    return null;
-                  },
+                  validator: InputValidator.validateEmail,
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  inputFormatters: InputValidator.passwordFormatters,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: const OutlineInputBorder(),
@@ -136,20 +126,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password wajib diisi';
-                    }
-                    if (value.length < 8) {
-                      return 'Minimal 8 karakter';
-                    }
-                    return null;
-                  },
+                  validator: InputValidator.validatePassword,
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
+                  inputFormatters: InputValidator.passwordFormatters,
                   decoration: InputDecoration(
                     labelText: 'Konfirmasi password',
                     border: const OutlineInputBorder(),
@@ -167,8 +150,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Konfirmasi password wajib diisi';
+                    final String? basicValidation =
+                        InputValidator.validatePassword(value);
+                    if (basicValidation != null) {
+                      return value == null || value.isEmpty
+                          ? 'Konfirmasi password wajib diisi'
+                          : basicValidation;
                     }
                     if (value != _passwordController.text) {
                       return 'Password tidak sama';
