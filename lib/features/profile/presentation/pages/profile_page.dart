@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/router/app_router.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
-import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
 import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:khatorgame/features/profile/presentation/pages/currency_page.dart';
 import 'package:khatorgame/features/profile/presentation/pages/edit_profile_page.dart';
@@ -18,7 +18,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProfileController controller = Get.find<ProfileController>();
-    final AuthRepositoryImpl authRepository = AuthRepositoryImpl();
+    final AuthRepository authRepository = Get.find<AuthRepository>();
 
     return Obx(() {
       if (controller.isLoading.value && controller.profile.value == null) {

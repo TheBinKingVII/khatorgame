@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/core/utils/currency_price_formatter.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
-import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
 import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
@@ -22,7 +21,7 @@ class DealsDetailPage extends StatefulWidget {
 }
 
 class _DealsDetailPageState extends State<DealsDetailPage> {
-  final DealsUsecase _usecase = DealsUsecase(DealsRepositoryImpl());
+  final DealsUsecase _usecase = Get.find<DealsUsecase>();
   final ProfileController _profileController = Get.find<ProfileController>();
   late final Future<DealsDetailEntity> _detailFuture;
 

@@ -14,7 +14,7 @@ class DealsPage extends StatefulWidget {
 }
 
 class _DealsPageState extends State<DealsPage> {
-  final DealsController _controller = Get.put(DealsController());
+  final DealsController _controller = Get.find<DealsController>();
   final ProfileController _profileController = Get.find<ProfileController>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
@@ -31,7 +31,6 @@ class _DealsPageState extends State<DealsPage> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchController.dispose();
-    Get.delete<DealsController>();
     super.dispose();
   }
 

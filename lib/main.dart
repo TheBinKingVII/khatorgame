@@ -13,6 +13,11 @@ import 'package:khatorgame/features/chatbot/data/repositories/chatbot_repository
 import 'package:khatorgame/features/chatbot/domain/repositories/chatbot_repository.dart';
 import 'package:khatorgame/features/chatbot/domain/usecases/chatbot_usecase.dart';
 import 'package:khatorgame/features/chatbot/presentation/controllers/chatbot_controller.dart';
+import 'package:khatorgame/features/deals/data/datasources/deals_remote_data_source.dart';
+import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
+import 'package:khatorgame/features/deals/domain/repositories/deals_repository.dart';
+import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
+import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
 import 'package:khatorgame/features/internetcafe/data/datasources/internetcafe_device_data_source.dart';
 import 'package:khatorgame/features/internetcafe/data/datasources/internetcafe_remote_data_source.dart';
 import 'package:khatorgame/features/internetcafe/data/repositories/internetcafe_repository_impl.dart';
@@ -25,6 +30,8 @@ import 'package:khatorgame/features/minigames/data/repositories/minigames_reposi
 import 'package:khatorgame/features/minigames/domain/repositories/minigames_repository.dart';
 import 'package:khatorgame/features/minigames/domain/usecases/minigames_usecase.dart';
 import 'package:khatorgame/features/minigames/presentation/controllers/minigames_controller.dart';
+import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
 import 'package:khatorgame/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:khatorgame/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:khatorgame/features/profile/domain/repositories/profile_repository.dart';
@@ -109,7 +116,25 @@ void setupDependencies() {
     permanent: true,
   );
 
-  // 4. Profile
+  // 4. Auth
+  Get.put<AuthRepository>(AuthRepositoryImpl(), permanent: true);
+
+  // 5. Deals
+  Get.put<DealsRemoteDataSource>(DealsRemoteDataSource(), permanent: true);
+  Get.put<DealsRepository>(
+    DealsRepositoryImpl(remoteDataSource: Get.find<DealsRemoteDataSource>()),
+    permanent: true,
+  );
+  Get.put<DealsUsecase>(
+    DealsUsecase(Get.find<DealsRepository>()),
+    permanent: true,
+  );
+  Get.put<DealsController>(
+    DealsController(usecase: Get.find<DealsUsecase>()),
+    permanent: true,
+  );
+
+  // 6. Profile
   Get.put<ProfileRemoteDataSource>(ProfileRemoteDataSourceImpl());
   Get.put<ProfileRepository>(
     ProfileRepositoryImpl(
@@ -141,7 +166,7 @@ void setupDependencies() {
     permanent: true,
   );
 
-  // 5. Minigames
+  // 7. Minigames
   Get.put<MinigamesRemoteDataSource>(MinigamesRemoteDataSourceImpl());
   Get.put<MinigamesLocalDataSource>(MinigamesLocalDataSourceImpl());
   Get.put<MinigamesRepository>(
@@ -156,7 +181,7 @@ void setupDependencies() {
     permanent: true,
   );
 
-  // 6. Internetcafe
+  // 8. Internetcafe
   Get.put<InternetcafeDeviceDataSource>(InternetcafeDeviceDataSourceImpl());
   Get.put<InternetcafeRemoteDataSource>(InternetcafeRemoteDataSourceImpl());
   Get.put<InternetcafeRepository>(

@@ -38,6 +38,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return user;
   }
 
+  @override
   Future<AuthEntity> loginWithBiometric() async {
     final BiometricIdentity? identity = await _biometricService
         .getSavedIdentity();
@@ -58,6 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return AuthEntity(id: identity.userId, email: identity.userEmail);
   }
 
+  @override
   Future<bool> canShowBiometricLogin() async {
     final BiometricIdentity? identity = await _biometricService
         .getSavedIdentity();
