@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:latlong2/latlong.dart';
 import '../../domain/entities/internetcafe_entity.dart';
 import '../../domain/usecases/internetcafe_usecase.dart';
@@ -78,8 +79,11 @@ class InternetcafeController extends GetxController {
       
       cafes.value = fetchedCafes;
 
-    } catch (e) {
-      errorMessage.value = e.toString().replaceFirst('Exception: ', '');
+    } catch (error) {
+      errorMessage.value = mapErrorToUserMessage(
+        error,
+        fallbackMessage: 'Gagal memuat lokasi dan data warnet. Coba lagi.',
+      );
     } finally {
       isLoading.value = false;
     }
@@ -127,20 +131,20 @@ class InternetcafeController extends GetxController {
           routePoints.value = points;
         }
       }
-    } on DioException catch (e) {
-      String message = 'Gagal memuat rute jalan. Coba lagi nanti.';
-      if (e.type == DioExceptionType.connectionTimeout || 
-          e.type == DioExceptionType.receiveTimeout || 
-          e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.unknown) {
-        message = 'Koneksi terputus. Pastikan jaringan internet stabil!';
-      }
-      throw Exception(message);
-    } catch (e) {
-      if (e.toString().contains('Koneksi')) {
-        rethrow;
-      }
-      throw Exception('Terjadi kesalahan tidak terduga.');
+    } on DioException catch (error) {
+      throw Exception(
+        mapErrorToUserMessage(
+          error,
+          fallbackMessage: 'Gagal memuat rute jalan. Coba lagi nanti.',
+        ),
+      );
+    } catch (error) {
+      throw Exception(
+        mapErrorToUserMessage(
+          error,
+          fallbackMessage: 'Terjadi kesalahan tidak terduga.',
+        ),
+      );
     } finally {
       isFetchingRoute.value = false;
     }

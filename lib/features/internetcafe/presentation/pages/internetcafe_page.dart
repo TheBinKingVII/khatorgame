@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:latlong2/latlong.dart';
 import '../controllers/internetcafe_controller.dart';
 import '../../domain/entities/internetcafe_entity.dart';
@@ -280,13 +281,13 @@ class InternetcafePage extends StatelessWidget {
                       // Request API OSRM untuk menggambar garis rute
                       try {
                         await controller.fetchRouteTo(cafe.latitude, cafe.longitude);
-                      } catch (e) {
+                      } catch (error) {
                         // Tampilkan error menggunakan ScaffoldMessenger bawaan Flutter
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                e.toString().replaceAll('Exception: ', ''),
+                                mapErrorToUserMessage(error),
                                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                               backgroundColor: Colors.redAccent,

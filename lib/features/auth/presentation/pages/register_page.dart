@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -53,7 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(content: Text(mapErrorToUserMessage(error))),
       );
     } finally {
       if (!mounted) return;

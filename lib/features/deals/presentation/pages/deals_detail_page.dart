@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/core/utils/currency_price_formatter.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
@@ -192,7 +193,10 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      'Gagal memuat detail.\n${snapshot.error}',
+                      mapErrorToUserMessage(
+                        snapshot.error!,
+                        fallbackMessage: 'Gagal memuat detail game. Coba lagi.',
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),

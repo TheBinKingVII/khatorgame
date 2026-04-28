@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/core/services/biometric_auth_service.dart';
 import 'package:khatorgame/core/services/wishlist_reminder_notification_service.dart';
 import 'package:khatorgame/features/profile/domain/entities/currency_option_entity.dart';
@@ -71,7 +72,10 @@ class ProfileController extends GetxController {
         profile.value?.notificationsEnabled ?? false,
       );
     } catch (error) {
-      errorMessage.value = error.toString();
+      errorMessage.value = mapErrorToUserMessage(
+        error,
+        fallbackMessage: 'Gagal memuat profil. Coba lagi.',
+      );
     } finally {
       isLoading.value = false;
     }
