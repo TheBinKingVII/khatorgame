@@ -46,12 +46,19 @@ class MinigamesController extends GetxController {
         throw "User tidak terdeteksi (Login dulu gih)";
       }
 
+      // Klaim voucher dulu — ini yang butuh internet
       final String voucherCode = await usecase.claimVoucher(currentUserId);
       
-      // Update UI langsung secara reaktif dan load ulang data dari storage
-      // supaya format waktu (code#timestamp) ikut terbaca masuk ke memori List
+      // Update state klaim
       hasClaimedToday.value = true;
-      await loadGameData();
+
+      // Reload data (best effort — jangan sampai nutupin voucher yang udah berhasil)
+      try {
+        await loadGameData();
+      } catch (_) {
+        // Reload gagal tidak masalah, voucher sudah tersimpan
+        collectedVouchers.add(voucherCode);
+      }
 
       return voucherCode;
     } catch (error) {

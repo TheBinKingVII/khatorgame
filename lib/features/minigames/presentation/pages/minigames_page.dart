@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -59,10 +60,32 @@ class _MinigamesPageState extends State<MinigamesPage> {
   
   final List<String> _goodEmojis = ['💻', '🖥️', '🖱️', '🎮', '🎧'];
 
+  // Offline detection
+  bool _isOffline = false;
+  bool _isCheckingConn = false;
+
   @override
   void initState() {
     super.initState();
     _initSensors();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    if (!mounted) return;
+    setState(() => _isCheckingConn = true);
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+      if (mounted) {
+        setState(() {
+          _isOffline = result.isEmpty || result[0].rawAddress.isEmpty;
+          _isCheckingConn = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _isOffline = true; _isCheckingConn = false; });
+    }
   }
 
   void _showErrorDialog(String message) {
@@ -70,7 +93,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.red[900],
-        title: const Text('ERROR BRAY', style: TextStyle(color: Colors.white)),
+        title: const Text('ERROR', style: TextStyle(color: Colors.white)),
         content: Text(message, style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK', style: TextStyle(color: Colors.white))),
@@ -80,6 +103,22 @@ class _MinigamesPageState extends State<MinigamesPage> {
   }
 
   void _startGame() {
+    // Blokir jika offline
+    if (_isOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Koneksi terputus. Pastikan internet aktif untuk bermain!',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
     setState(() {
       _score = 0;
       _items.clear();
@@ -164,7 +203,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('GAME OVER!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Text('Yahh kamu kena bom! Skor terakhir: $_score\nAyo coba lagi bray!',
@@ -193,16 +232,81 @@ class _MinigamesPageState extends State<MinigamesPage> {
     _isGameOver = true;
     _gameLoopTimer?.cancel();
     _spawnTimer?.cancel();
-    
-    // Panggil fungsi klaim dari controller
+    await _tryClaim();
+  }
+
+  // Method klaim yang bisa dipanggil ulang tanpa perlu stop game lagi
+  Future<void> _tryClaim() async {
+    if (!mounted) return;
+
+    // Cek koneksi real-time sebelum klaim
+    bool canConnect = false;
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+      canConnect = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (_) {
+      canConnect = false;
+    }
+
+    if (!mounted) return;
+
+    if (!canConnect) {
+      // Offline — tampilkan dialog ramah dengan tombol retry
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.wifi_off_rounded, color: Colors.redAccent),
+              SizedBox(width: 10),
+              Text('Koneksi Terputus', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: const Text(
+            'Selamat, kamu sudah menang! 🎉\n\nTapi koneksi internet terputus saat proses klaim voucher.\nHubungkan ke internet lalu coba klaim ulang.',
+            style: TextStyle(height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() => _gameStarted = false);
+              },
+              child: Text('Ke Menu', style: TextStyle(color: Colors.grey[600])),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await _tryClaim(); // Coba klaim ulang tanpa restart game
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Coba Lagi'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Online — lanjut klaim voucher
     final voucherCode = await _controller.claimVoucher();
-    if (voucherCode != null && mounted) {
+    if (!mounted) return;
+    if (voucherCode != null) {
       _showSuccessWinDialog(voucherCode);
-    } else if (mounted && _controller.errorMessage.value.isNotEmpty) {
+    } else if (_controller.errorMessage.value.isNotEmpty) {
       _showErrorDialog(_controller.errorMessage.value);
       setState(() => _gameStarted = false);
     }
   }
+
 
   void _showSuccessWinDialog(String voucherCode) {
     final nowUtc = DateTime.now().toUtc();
@@ -344,8 +448,8 @@ class _MinigamesPageState extends State<MinigamesPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF2C2C3E),
-            title: const Text('Koleksi Voucher', style: TextStyle(color: Colors.white)),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            title: const Text('Vouchers', style: TextStyle(color: Colors.white)),
             content: SizedBox(
               width: double.maxFinite,
               // Kasih batasan max biar nggak overflow ke luar layar
@@ -358,7 +462,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
                     decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(8)),
                     child: DropdownButton<String>(
                       value: selectedZone,
-                      dropdownColor: Colors.deepPurple[900],
+                      dropdownColor: const Color(0xFF1A237E),
                       isExpanded: true,
                       icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
@@ -446,7 +550,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
                                       Icon(
                                         copiedIndex == index ? Icons.check_circle : Icons.copy, 
                                         size: 16, 
-                                        color: copiedIndex == index ? Colors.white : Colors.blueAccent
+                                        color: copiedIndex == index ? Colors.white : Theme.of(context).colorScheme.background
                                       ),
                                     ],
                                   ),
@@ -506,7 +610,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
         });
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🧲 SUPER MAGNET AKTIF!'), backgroundColor: Colors.blueAccent),
+          SnackBar(content: const Text('🧲 SUPER MAGNET AKTIF!'), backgroundColor: Theme.of(context).colorScheme.primary),
         );
       }
     });
@@ -524,12 +628,13 @@ class _MinigamesPageState extends State<MinigamesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E2C),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Gudang Gear Khator'),
-        backgroundColor: Colors.transparent,
+        title: const Text('Gudang Gear Khator', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         foregroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: SafeArea(
         child: _gameStarted 
@@ -541,49 +646,98 @@ class _MinigamesPageState extends State<MinigamesPage> {
 
   // === UI LOBBY (MENU AWAL) ===
   Widget _buildLobbyUI({Key? key}) {
-    return Padding(
+    return SingleChildScrollView(
       key: key,
       padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 8),
           const Icon(Icons.videogame_asset, size: 80, color: Colors.amber),
           const SizedBox(height: 10),
           const Text('Minigame Berhadiah',
-              style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              style: TextStyle(color: Colors.black87, fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           _buildInstructionItem(Icons.edgesensor_low, 'Miringkan HP', 'Gerakkan keranjang ke kiri/kanan.'),
           _buildInstructionItem(Icons.pan_tool, 'Tutup Sensor Atas', 'Aktifkan Magnet & Shield (3 detik).'),
           _buildInstructionItem(Icons.star, 'Kumpulkan $_targetScore Poin', 'Dapatkan 1 Voucher Steam Wallet per hari.'),
-          const Spacer(),
-          Obx(() {
-            if (_controller.hasClaimedToday.value) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya',
-                    textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
-              );
-            } else {
-              return SizedBox(
-                width: double.infinity, height: 60,
-                child: ElevatedButton(
-                  onPressed: _startGame,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurpleAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          const SizedBox(height: 16),
+          // Cek koneksi dulu
+          if (_isCheckingConn)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(children: [
+                CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                const SizedBox(height: 12),
+                Text('Mengecek koneksi...', style: TextStyle(color: Colors.grey[600])),
+              ]),
+            )
+          else if (_isOffline)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.redAccent.shade100),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.wifi_off_rounded, size: 44, color: Colors.redAccent),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Tidak Ada Koneksi Internet',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent),
                   ),
-                  child: const Text('MULAI BERMAIN',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                ),
-              );
-            }
-          }),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Minigame membutuhkan internet untuk klaim voucher. Hubungkan ke jaringan lalu coba lagi.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.red.shade400, height: 1.5),
+                  ),
+                  const SizedBox(height: 14),
+                  OutlinedButton.icon(
+                    onPressed: _checkConnectivity,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Coba Lagi'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      side: const BorderSide(color: Colors.redAccent),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Obx(() {
+              if (_controller.hasClaimedToday.value) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: const Text('✅ Hadiah Sudah Diambil!\nBalik lagi besok ya',
+                      textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                );
+              } else {
+                return SizedBox(
+                  width: double.infinity, height: 60,
+                  child: ElevatedButton(
+                    onPressed: _startGame,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: const Text('MULAI BERMAIN',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                );
+              }
+            }),
           const SizedBox(height: 30),
           Obx(() => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Voucher di Inventory: ${_controller.collectedVouchers.length}', style: const TextStyle(color: Colors.white54)),
+              Text('Voucher di Inventory: ${_controller.collectedVouchers.length}', style: TextStyle(color: Colors.grey[600])),
               const SizedBox(width: 10),
               if (_controller.collectedVouchers.isNotEmpty)
                 GestureDetector(
@@ -592,28 +746,33 @@ class _MinigamesPageState extends State<MinigamesPage> {
                 ),
             ],
           )),
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionItem(IconData icon, String title, String desc) {
+
+   Widget _buildInstructionItem(IconData icon, String title, String desc) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: Colors.blueAccent, size: 28),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                Text(desc, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(title, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                Text(desc, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
               ],
             ),
           )
@@ -634,7 +793,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.deepPurple.withOpacity(0.5), borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), borderRadius: BorderRadius.circular(15)),
                 child: Text('Poin: $_score',
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.amber)),
               ),
@@ -642,7 +801,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                    Text('🎯 Target: $_targetScore', style: const TextStyle(color: Colors.amberAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                   Text('⚡ Magnet: ${_canShake ? 'READY' : 'COOLDOWN'}', style: TextStyle(color: _canShake ? Colors.blueAccent : Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                   Text('⚡ Magnet: ${_canShake ? 'READY' : 'COOLDOWN'}', style: TextStyle(color: _canShake ? Theme.of(context).colorScheme.primary : Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
                 ],
               )
             ],
@@ -650,7 +809,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
         ),
         Expanded(
           child: Container(
-            decoration: BoxDecoration(border: _isMagnetActive ? Border.all(color: Colors.blueAccent.withOpacity(0.5), width: 4) : null),
+            decoration: BoxDecoration(border: _isMagnetActive ? Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 4) : null),
             child: ClipRRect(
               child: Stack(
                 children: [
@@ -662,9 +821,9 @@ class _MinigamesPageState extends State<MinigamesPage> {
                     alignment: Alignment(_basketX, 0.9),
                     child: Container(
                       width: 90, height: 50,
-                      decoration: const BoxDecoration(
-                        color: Colors.deepPurpleAccent,
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondary,
+                        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
                       ),
                       child: const Center(child: Text('🛒', style: TextStyle(fontSize: 28))),
                     ),
@@ -696,3 +855,4 @@ class _MinigamesPageState extends State<MinigamesPage> {
     );
   }
 }
+
