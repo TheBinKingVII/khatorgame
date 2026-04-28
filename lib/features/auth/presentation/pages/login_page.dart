@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
+import 'package:get/get.dart';
+import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,7 +12,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final AuthRepositoryImpl _authRepository = AuthRepositoryImpl();
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -60,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
+          content: Text(mapErrorToUserMessage(error)),
         ),
       );
     } finally {
@@ -84,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
+          content: Text(mapErrorToUserMessage(error)),
         ),
       );
     } finally {

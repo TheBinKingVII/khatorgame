@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
 import '../../domain/entities/chatbot_entity.dart';
 import '../../domain/usecases/chatbot_usecase.dart';
@@ -32,9 +33,8 @@ class ChatbotController extends GetxController {
 
       String secretContext = "";
 
-      // 2. Panggil DealsController yang sudah terhubung ke API
-      // Pakai Get.put agar kalau controller belum diregister, GetX bakal buatin
-      final dealsController = Get.put(DealsController());
+      // 2. Panggil DealsController singleton dari dependency container.
+      final DealsController dealsController = Get.find<DealsController>();
       
       // 3. Pastikan data sudah diload dari API. Jika masih kosong, paksa load!
       if (dealsController.deals.isEmpty) {
@@ -77,17 +77,10 @@ Aturan menjawab:
       final response = await usecase.execute(enrichedPrompt);
       
       messages.add(response);
-    } catch (e) {
-      print("Error AI: $e");
-      
-      String errText = e.toString();
-      // Hilangkan awalan "Exception: " yang otomatis ditambah oleh Dart
-      if (errText.startsWith('Exception: ')) {
-        errText = errText.substring(11);
-      }
-
+    } catch (error) {
+      print("Error AI: $error");
       messages.add(ChatbotEntity(
-        text: errText, 
+        text: mapErrorToUserMessage(error),
         isUser: false,
       ));
     } finally {

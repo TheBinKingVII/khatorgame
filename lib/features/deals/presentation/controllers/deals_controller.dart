@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:khatorgame/features/deals/data/repositories/deals_repository_impl.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/features/deals/domain/entities/deals_entity.dart';
 import 'package:khatorgame/features/deals/domain/usecases/deals_usecase.dart';
 
 class DealsController extends GetxController {
-  DealsController({DealsUsecase? usecase})
-    : _usecase = usecase ?? DealsUsecase(DealsRepositoryImpl());
+  DealsController({required DealsUsecase usecase}) : _usecase = usecase;
 
   final DealsUsecase _usecase;
   final RxList<DealsEntity> deals = <DealsEntity>[].obs;
@@ -57,7 +56,10 @@ class DealsController extends GetxController {
       deals.addAll(firstPage);
       hasMore.value = firstPage.isNotEmpty;
     } catch (error) {
-      errorMessage.value = error.toString();
+      errorMessage.value = mapErrorToUserMessage(
+        error,
+        fallbackMessage: 'Gagal memuat daftar game. Coba lagi.',
+      );
     } finally {
       isInitialLoading.value = false;
     }

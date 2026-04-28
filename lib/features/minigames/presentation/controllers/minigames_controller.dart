@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/core/services/session_service.dart';
 import '../../domain/usecases/minigames_usecase.dart';
 
@@ -24,8 +25,11 @@ class MinigamesController extends GetxController {
     try {
       hasClaimedToday.value = await usecase.hasClaimedToday();
       collectedVouchers.value = await usecase.getCollectedVouchers();
-    } catch (e) {
-      errorMessage.value = e.toString();
+    } catch (error) {
+      errorMessage.value = mapErrorToUserMessage(
+        error,
+        fallbackMessage: 'Gagal memuat data minigame. Coba lagi.',
+      );
     } finally {
       isLoading.value = false;
     }
@@ -50,8 +54,11 @@ class MinigamesController extends GetxController {
       await loadGameData();
 
       return voucherCode;
-    } catch (e) {
-      errorMessage.value = e.toString().replaceFirst('Exception: ', '');
+    } catch (error) {
+      errorMessage.value = mapErrorToUserMessage(
+        error,
+        fallbackMessage: 'Gagal klaim voucher. Coba lagi.',
+      );
       return null;
     } finally {
       isClaiming.value = false;

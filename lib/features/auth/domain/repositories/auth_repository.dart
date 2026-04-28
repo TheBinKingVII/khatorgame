@@ -13,4 +13,8 @@ abstract class AuthRepository {
   });
 
   Future<void> logout();
+
+  Future<AuthEntity> loginWithBiometric();
+
+  Future<bool> canShowBiometricLogin();
 }

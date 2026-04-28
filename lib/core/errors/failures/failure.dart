@@ -1,7 +1,8 @@
 abstract class Failure implements Exception {
+  const Failure(this.message);
+
   final String message;
-  Failure(this.message);
 
   @override
-  String toString() => "Failure: $message";
+  String toString() => message;
 }
