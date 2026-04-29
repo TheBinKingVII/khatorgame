@@ -7,58 +7,123 @@ import '../controllers/internetcafe_controller.dart';
 import '../../domain/entities/internetcafe_entity.dart';
 
 class InternetcafePage extends StatelessWidget {
-  final MapController mapController = MapController(); // Controller tambahan untuk peta
+  final MapController mapController = MapController();
 
   InternetcafePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Ambil controller dari Dependency Injection
     final InternetcafeController controller = Get.find<InternetcafeController>();
+    final primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Warnet Radar LBS'),
-        centerTitle: true,
+      backgroundColor: const Color(0xFFF0F4F8),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(54),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primary, primary.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: primary.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Warnet Radar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      Text(
+                        'Temukan Warnet Terdekat',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Obx(() {
+        // State: Loading
         if (controller.isLoading.value) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Menghitung satelit dan lokasi kamu...')
+                CircularProgressIndicator(color: primary),
+                const SizedBox(height: 20),
+                const Text(
+                  'Menghitung satelit\ndan lokasi kamu...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.grey),
+                ),
               ],
             ),
           );
         }
 
+        // State: Error
         if (controller.errorMessage.value.isNotEmpty) {
           return Center(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.location_off, size: 60, color: Colors.grey),
-                  const SizedBox(height: 16),
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.redAccent),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Koneksi Bermasalah',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
                   Text(
                     controller.errorMessage.value,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   ElevatedButton.icon(
                     onPressed: () => controller.fetchLocationAndCafes(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Coba Lagi'),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Coba Lagi', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                      shadowColor: primary.withOpacity(0.4),
                     ),
                   ),
                 ],
@@ -72,32 +137,42 @@ class InternetcafePage extends StatelessWidget {
 
         final userLatLng = LatLng(userPos.latitude, userPos.longitude);
 
-        // Menyiapkan Marker Peta
+        // Build map markers
         List<Marker> mapMarkers = [
-          // Marker Lokasi User (Warna Biru)
           Marker(
             point: userLatLng,
             width: 50,
             height: 50,
-            child: const Icon(
-              Icons.my_location,
-              color: Colors.blueAccent,
-              size: 40,
+            child: Container(
+              decoration: BoxDecoration(
+                color: primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2.5),
+                boxShadow: [
+                  BoxShadow(color: primary.withOpacity(0.5), blurRadius: 8, spreadRadius: 2)
+                ],
+              ),
+              child: const Icon(Icons.my_location, color: Colors.white, size: 22),
             ),
           ),
         ];
 
-        // Memasukkan Marker Warnet (Warna Merah)
         for (var cafe in controller.cafes) {
           mapMarkers.add(
             Marker(
               point: LatLng(cafe.latitude, cafe.longitude),
-              width: 50,
-              height: 50,
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.red,
-                size: 40,
+              width: 44,
+              height: 44,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 6, spreadRadius: 1)
+                  ],
+                ),
+                child: const Icon(Icons.computer_rounded, color: Colors.white, size: 22),
               ),
             ),
           );
@@ -105,75 +180,105 @@ class InternetcafePage extends StatelessWidget {
 
         return Column(
           children: [
-            // BAGIAN ATAS: PETA
+            // Peta
             Expanded(
-              flex: 5, // 50% Layar buat Peta
-              child: FlutterMap(
-                mapController: mapController, // Hubungkan Map ke controller internal
-                options: MapOptions(
-                  initialCenter: userLatLng,
-                  initialZoom: 13.0,
-                ),
+              flex: 5,
+              child: Stack(
                 children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.khatorgame',
-                  ),
-                  PolylineLayer(
-                    polylines: [
-                      if (controller.routePoints.isNotEmpty)
-                        Polyline(
-                          points: controller.routePoints.toList(),
-                          strokeWidth: 5.0,
-                          color: Colors.blueAccent,
-                        ),
+                  FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      initialCenter: userLatLng,
+                      initialZoom: 13.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.khatorgame',
+                      ),
+                      PolylineLayer(
+                        polylines: [
+                          if (controller.routePoints.isNotEmpty)
+                            Polyline(
+                              points: controller.routePoints.toList(),
+                              strokeWidth: 5.0,
+                              color: primary,
+                            ),
+                        ],
+                      ),
+                      MarkerLayer(markers: mapMarkers),
                     ],
                   ),
-                  MarkerLayer(markers: mapMarkers),
+                  // Info overlay jumlah warnet
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.store_rounded, size: 16, color: primary),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${controller.cafes.length} Warnet',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
 
-            // BAGIAN BAWAH: DAFTAR WARNET
+            // Header daftar warnet
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              color: Colors.white,
+              child: Row(
+                children: [
+                  Icon(Icons.list_rounded, color: primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Warnet Terdekat',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Daftar Warnet
             Expanded(
-              flex: 5, // 50% Layar buat List
+              flex: 5,
               child: Container(
-                color: Colors.grey[50],
+                color: const Color(0xFFF0F4F8),
                 child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
                   itemCount: controller.cafes.length,
                   itemBuilder: (context, index) {
                     final cafe = controller.cafes[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      elevation: 2,
-                      child: ListTile(
-                        onTap: () {
-                          // ACTION 1: Geser map ke lokasi warnet
-                          mapController.move(
-                            LatLng(cafe.latitude, cafe.longitude), 
-                            16.0 
-                          );
-                          // ACTION 2: Munculkan Bottom Sheet Detail
-                          _showCafeDetails(context, cafe);
-                        },
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.redAccent,
-                          child: Icon(Icons.computer, color: Colors.white),
-                        ),
-                        title: Text(cafe.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(cafe.address),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.directions_walk, size: 20, color: Colors.grey),
-                            Text(
-                              '${(cafe.distance / 1000).toStringAsFixed(1)} KM',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildCafeCard(context, cafe, index);
                   },
                 ),
               ),
@@ -184,129 +289,314 @@ class InternetcafePage extends StatelessWidget {
     );
   }
 
-  void _showCafeDetails(BuildContext context, InternetcafeEntity cafe) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // WAJIB: Agar tingginya bisa bebas dan tidak kepotong
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  Widget _buildCafeCard(BuildContext context, InternetcafeEntity cafe, int index) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            mapController.move(LatLng(cafe.latitude, cafe.longitude), 16.0);
+            _showCafeDetails(context, cafe);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Nomor urut
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primary, primary.withOpacity(0.7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
                     child: Text(
-                      cafe.name,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  Row(
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.star, color: Colors.orange),
                       Text(
-                        cafe.rating.toString(),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        cafe.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        cafe.address,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Icon(Icons.star_rounded, size: 13, color: Colors.amber[700]),
+                          const SizedBox(width: 3),
+                          Text(
+                            cafe.rating.toString(),
+                            style: TextStyle(fontSize: 12, color: Colors.amber[800], fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(width: 10),
+                          Icon(Icons.monetization_on_rounded, size: 13, color: Colors.green[700]),
+                          const SizedBox(width: 3),
+                          Text(
+                            cafe.pricePerHour,
+                            style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ],
-                  )
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '📍 ${cafe.address} • ${(cafe.distance / 1000).toStringAsFixed(1)} KM',
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.monetization_on, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${cafe.pricePerHour} / Jam',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text('Fasilitas:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: cafe.facilities.map((fac) => Chip(
-                  label: Text(fac, style: const TextStyle(fontSize: 12)),
-                  backgroundColor: Colors.blue[50],
-                )).toList(),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: Obx(() {
-                  final InternetcafeController controller = Get.find<InternetcafeController>();
-                  return ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                // Jarak
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${(cafe.distance / 1000).toStringAsFixed(1)}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: primary,
+                      ),
                     ),
-                    icon: controller.isFetchingRoute.value 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.route),
-                    label: Text(
-                      controller.isFetchingRoute.value ? 'Mencari Rute...' : 'Tampilkan Rute di Peta', 
-                      style: const TextStyle(fontSize: 16)
+                    Text(
+                      'KM',
+                      style: TextStyle(fontSize: 10, color: primary.withOpacity(0.7), fontWeight: FontWeight.w600),
                     ),
-                    onPressed: controller.isFetchingRoute.value ? null : () async {
-                      // Tutup pop-up LEBIH DULU agar SnackBar tidak tertutup animasi
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                      
-                      // Geser kamera ke agak tengah antara user & warnet
-                      mapController.move(
-                        LatLng(cafe.latitude, cafe.longitude), 
-                        14.0 
-                      );
-                      
-                      // Request API OSRM untuk menggambar garis rute
-                      try {
-                        await controller.fetchRouteTo(cafe.latitude, cafe.longitude);
-                      } catch (error) {
-                        // Tampilkan error menggunakan ScaffoldMessenger bawaan Flutter
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                mapErrorToUserMessage(error),
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(16),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  );
-                }),
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
-  },
-);
+  }
+
+  void _showCafeDetails(BuildContext context, InternetcafeEntity cafe) {
+    final primary = Theme.of(context).colorScheme.primary;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 16),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header nama & rating
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(Icons.computer_rounded, color: primary, size: 28),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    cafe.name,
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        cafe.rating.toString(),
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+                        Divider(color: Colors.grey[200]),
+                        const SizedBox(height: 12),
+
+                        // Info baris
+                        _infoRow(Icons.location_on_rounded, Colors.redAccent,
+                            '${cafe.address} • ${(cafe.distance / 1000).toStringAsFixed(1)} KM'),
+                        const SizedBox(height: 10),
+                        _infoRow(Icons.payments_rounded, Colors.green,
+                            '${cafe.pricePerHour} / Jam'),
+
+                        const SizedBox(height: 16),
+                        Text(
+                          'Fasilitas',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: primary, fontSize: 14),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: cafe.facilities.map((fac) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: primary.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: primary.withOpacity(0.2)),
+                            ),
+                            child: Text(
+                              fac,
+                              style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w500),
+                            ),
+                          )).toList(),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Tombol Rute
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: Obx(() {
+                            final InternetcafeController ctrl = Get.find<InternetcafeController>();
+                            return ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primary,
+                                foregroundColor: Colors.white,
+                                elevation: 4,
+                                shadowColor: primary.withOpacity(0.4),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              icon: ctrl.isFetchingRoute.value
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.route_rounded),
+                              label: Text(
+                                ctrl.isFetchingRoute.value ? 'Mencari Rute...' : 'Tampilkan Rute di Peta',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              onPressed: ctrl.isFetchingRoute.value
+                                  ? null
+                                  : () async {
+                                      if (context.mounted) Navigator.pop(context);
+                                      mapController.move(LatLng(cafe.latitude, cafe.longitude), 14.0);
+                                      try {
+                                        await ctrl.fetchRouteTo(cafe.latitude, cafe.longitude);
+                                      } catch (error) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                mapErrorToUserMessage(error),
+                                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                              backgroundColor: Colors.redAccent,
+                                              behavior: SnackBarBehavior.floating,
+                                              margin: const EdgeInsets.all(16),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _infoRow(IconData icon, Color iconColor, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: iconColor, size: 18),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(text, style: const TextStyle(fontSize: 13, height: 1.4)),
+          ),
+        ),
+      ],
+    );
   }
 }

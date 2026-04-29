@@ -5,6 +5,7 @@ import '../controllers/chatbot_controller.dart';
 
 class ChatbotPage extends StatelessWidget {
   final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   ChatbotPage({Key? key}) : super(key: key);
 
@@ -12,102 +13,384 @@ class ChatbotPage extends StatelessWidget {
     final String text = _textController.text.trim();
     final String? validationMessage = InputValidator.validateChatMessage(text);
     if (validationMessage != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(validationMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validationMessage),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
     controller.sendMessage(text);
     _textController.clear();
+    // Scroll ke bawah setelah kirim
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ChatbotController>();
+    final primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Khator AI Assistant'),
-        centerTitle: true,
+      backgroundColor: const Color(0xFFF0F4F8),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(58),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primary, primary.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: primary.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Khator AI Assistant',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
-          // Area Chat (Reactive dengan Obx)
+          // Chat Area
           Expanded(
-            child: Obx(() => ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: controller.messages.length,
-              itemBuilder: (context, index) {
-                final message = controller.messages[index];
-                return _buildChatBubble(context,message);
-              },
-            )),
+            child: Obx(() {
+              if (controller.messages.isEmpty) {
+                return _buildEmptyState(context);
+              }
+              // Auto-scroll ketika ada pesan baru
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    _scrollController.position.maxScrollExtent,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                }
+              });
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                itemCount: controller.messages.length,
+                itemBuilder: (context, index) {
+                  final message = controller.messages[index];
+                  return _buildChatBubble(context, message);
+                },
+              );
+            }),
           ),
-          
-          // Indikator Loading
-          Obx(() => controller.isLoading.value 
-            ? const LinearProgressIndicator() 
-            : const SizedBox.shrink()),
 
-          // Input Field
+          // Loading Indicator
+          Obx(() => controller.isLoading.value
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'AI sedang berpikir...',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink()),
+
+          // Input Area
           _buildInputArea(context, controller),
         ],
       ),
     );
   }
 
-  Widget _buildChatBubble(BuildContext context, message) {
-    bool isUser = message.isUser;
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12.0),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        decoration: BoxDecoration(
-          color: isUser ? Colors.deepPurple : Colors.grey[200],
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(15),
-            topRight: const Radius.circular(15),
-            bottomLeft: Radius.circular(isUser ? 15 : 0),
-            bottomRight: Radius.circular(isUser ? 0 : 15),
-          ),
-        ),
-        child: Text(
-          message.text,
-          style: TextStyle(color: isUser ? Colors.white : Colors.black87),
+  Widget _buildEmptyState(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.smart_toy_rounded, size: 48, color: primary),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Halo! Aku Khator AI 👋',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: primary,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Tanya aku soal game, diskon, atau rekomendasi game murah favoritmu!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildSuggestionChip(context, '🎮 Game diskon sekarang?'),
+                _buildSuggestionChip(context, '💸 Game RPG termurah?'),
+                _buildSuggestionChip(context, '⭐ Rekomendasi game bagus'),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInputArea(BuildContext context, ChatbotController controller) {
-    return Container(
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+  Widget _buildSuggestionChip(BuildContext context, String label) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return GestureDetector(
+      onTap: () {
+        _textController.text = label;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: primary.withOpacity(0.25)),
+        ),
+        child: Text(label, style: TextStyle(color: primary, fontSize: 13)),
       ),
+    );
+  }
+
+  Widget _buildChatBubble(BuildContext context, message) {
+    final bool isUser = message.isUser;
+    final primary = Theme.of(context).colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              inputFormatters: InputValidator.chatFormatters,
-              decoration: InputDecoration(
-                hintText: 'Tanya soal game atau diskon...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+          if (!isUser) ...[
+            // Avatar AI
+            Container(
+              width: 32,
+              height: 32,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: primary,
+                shape: BoxShape.circle,
               ),
-              onSubmitted: (_) => _handleSend(context, controller),
+              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
+            ),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.72,
+              ),
+              decoration: BoxDecoration(
+                gradient: isUser
+                    ? LinearGradient(
+                        colors: [primary, primary.withOpacity(0.85)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isUser ? null : Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 18),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isUser ? primary : Colors.black).withOpacity(0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                message.text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 14.5,
+                  height: 1.4,
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 10),
-          IconButton(
-            onPressed: () => _handleSend(context, controller),
-            icon: const Icon(Icons.send, color: Colors.deepPurple),
+          if (isUser) ...[
+            // Avatar User
+            Container(
+              width: 32,
+              height: 32,
+              margin: const EdgeInsets.only(left: 8),
+              decoration: BoxDecoration(
+                color: primary.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.person_rounded, color: primary, size: 18),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea(BuildContext context, ChatbotController controller) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F4F8),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: TextField(
+                  controller: _textController,
+                  inputFormatters: InputValidator.chatFormatters,
+                  maxLines: 4,
+                  minLines: 1,
+                  decoration: InputDecoration(
+                    hintText: 'Tanya soal game atau diskon...',
+                    hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                  ),
+                  onSubmitted: (_) => _handleSend(context, controller),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: () => _handleSend(context, controller),
+              child: Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primary, primary.withOpacity(0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
