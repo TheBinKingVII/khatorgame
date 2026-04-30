@@ -88,7 +88,7 @@ class _DealsPageState extends State<DealsPage> {
           _controller.onSearchChanged(value);
         },
         decoration: InputDecoration(
-          hintText: 'Cari game...',
+          hintText: 'Search games...',
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _controller.searchQuery.value.trim().isNotEmpty
               ? IconButton(
@@ -168,7 +168,7 @@ class _DealsPageState extends State<DealsPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            'Gagal memuat deals.\n${_controller.errorMessage.value}',
+            'Failed to load deals.\n${_controller.errorMessage.value}',
             textAlign: TextAlign.center,
           ),
         ),
@@ -180,7 +180,7 @@ class _DealsPageState extends State<DealsPage> {
     }
 
     if (_controller.deals.isEmpty) {
-      return const Center(child: Text('Belum ada deal tersedia.'));
+      return const Center(child: Text('No deals available yet.'));
     }
 
     return RefreshIndicator(
@@ -348,7 +348,7 @@ class _DealsPageState extends State<DealsPage> {
     }
 
     if (_controller.searchResults.isEmpty) {
-      return const Center(child: Text('Game tidak ditemukan.'));
+      return const Center(child: Text('Game not found.'));
     }
 
     return ListView.separated(
@@ -423,7 +423,7 @@ class _DealsPageState extends State<DealsPage> {
                         if (game.cheapestDealId.trim().isEmpty) ...<Widget>[
                           const SizedBox(height: 2),
                           const Text(
-                            'Deal tidak tersedia',
+                            'Deal unavailable',
                             style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],

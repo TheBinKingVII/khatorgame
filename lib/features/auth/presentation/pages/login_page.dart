@@ -157,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
                               Text(
-                                'Selamat datang kembali',
+                                'Welcome back',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w700,
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Masuk untuk melanjutkan petualanganmu.',
+                                'Sign in to continue your adventure.',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: Colors.white,
@@ -261,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
                                             ),
                                           )
                                         : const Icon(Icons.fingerprint),
-                                    label: const Text('Login dengan Biometrik'),
+                                    label: const Text('Login with Biometrics'),
                                   ),
                                 ),
                               ],
@@ -271,7 +271,7 @@ class _LoginPageState extends State<LoginPage> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,
                                 ),
-                                child: const Text('Belum punya akun? Daftar'),
+                                child: const Text('Don\'t have an account? Sign up'),
                               ),
                             ],
                           ),

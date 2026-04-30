@@ -12,6 +12,7 @@ class MinigamesController extends GetxController {
   final RxBool isClaiming = false.obs;
   final RxBool hasClaimedToday = false.obs;
   final RxList<String> collectedVouchers = <String>[].obs;
+  final RxBool isVoucherAvailable = true.obs;
   final RxString errorMessage = ''.obs;
 
   @override
@@ -25,10 +26,11 @@ class MinigamesController extends GetxController {
     try {
       hasClaimedToday.value = await usecase.hasClaimedToday();
       collectedVouchers.value = await usecase.getCollectedVouchers();
+      isVoucherAvailable.value = await usecase.checkVoucherAvailability();
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal memuat data minigame. Coba lagi.',
+        fallbackMessage: 'Failed to load minigames data. Try again.',
       );
     } finally {
       isLoading.value = false;
@@ -64,7 +66,7 @@ class MinigamesController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal klaim voucher. Coba lagi.',
+        fallbackMessage: 'Failed to claim voucher. Try again.',
       );
       return null;
     } finally {

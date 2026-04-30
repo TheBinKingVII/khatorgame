@@ -48,7 +48,7 @@ class WishlistPage extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${controller.items.length} game tersimpan',
+                    '${controller.items.length} games saved',
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
@@ -68,7 +68,7 @@ class WishlistPage extends StatelessWidget {
                   children: [
                     CircularProgressIndicator(color: primary),
                     const SizedBox(height: 16),
-                    const Text('Memuat wishlist...', style: TextStyle(color: Colors.grey)),
+                    const Text('Loading wishlist...', style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               );
@@ -97,7 +97,7 @@ class WishlistPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'Wishlist Masih Kosong',
+                            'Wishlist is Empty',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -106,7 +106,7 @@ class WishlistPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Tambahkan game favoritmu dari menu\nDeals, lalu simpan di sini.',
+                            'Add your favorite games from the\nDeals menu, and save them here.',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 13, color: Colors.grey[500], height: 1.5),
                           ),
@@ -251,12 +251,12 @@ class WishlistPage extends StatelessWidget {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        title: const Text('Hapus dari Wishlist?', style: TextStyle(fontWeight: FontWeight.bold)),
-                        content: Text('Hapus "${item.title}" dari wishlist?'),
+                        title: const Text('Remove from Wishlist?', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: Text('Remove "${item.title}" from wishlist?'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: Text('Batal', style: TextStyle(color: Colors.grey[600])),
+                            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
                           ),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx, true),
@@ -265,7 +265,7 @@ class WishlistPage extends StatelessWidget {
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: const Text('Hapus'),
+                            child: const Text('Remove'),
                           ),
                         ],
                       ),
@@ -276,7 +276,7 @@ class WishlistPage extends StatelessWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Dihapus dari wishlist'),
+                              content: const Text('Removed from wishlist'),
                               backgroundColor: Colors.redAccent,
                               behavior: SnackBarBehavior.floating,
                               margin: const EdgeInsets.all(14),
@@ -320,7 +320,7 @@ class WishlistPage extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Wishlist disinkronkan ✓'),
+            content: const Text('Wishlist synced ✓'),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

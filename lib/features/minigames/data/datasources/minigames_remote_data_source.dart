@@ -3,6 +3,7 @@ import '../models/minigames_model.dart';
 
 abstract class MinigamesRemoteDataSource {
   Future<VoucherModel> claimVoucher(String userId);
+  Future<bool> checkVoucherAvailability();
 }
 
 class MinigamesRemoteDataSourceImpl implements MinigamesRemoteDataSource {
@@ -22,7 +23,7 @@ class MinigamesRemoteDataSourceImpl implements MinigamesRemoteDataSource {
         .maybeSingle();
 
     if (response == null) {
-      throw Exception("Waduh, stok voucher lagi abis bray! Hubungi admin.");
+      throw Exception("Voucher out of stock! Contact admin.");
     }
 
     final voucher = VoucherModel.fromJson(response);
@@ -34,5 +35,16 @@ class MinigamesRemoteDataSourceImpl implements MinigamesRemoteDataSource {
         .eq('id', voucher.id);
 
     return voucher;
+  }
+
+  @override
+  Future<bool> checkVoucherAvailability() async {
+    final response = await _client
+        .from('vouchers')
+        .select('id')
+        .isFilter('user_id', null)
+        .limit(1)
+        .maybeSingle();
+    return response != null;
   }
 }

@@ -14,6 +14,8 @@ import 'package:khatorgame/features/profile/presentation/pages/notification_sett
 import 'package:khatorgame/features/profile/presentation/widgets/profile_header_card.dart';
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_section.dart';
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_tile.dart';
+import 'package:khatorgame/features/profile/presentation/pages/testimonial_page.dart';
+import 'package:khatorgame/features/profile/presentation/pages/advice_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -75,12 +77,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
                 const SizedBox(height: 16),
                 const Text(
-                  'Koneksi Terputus',
+                  'No Internet Connection',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.redAccent),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Menunggu koneksi internet pulih untuk memuat profil...',
+                  'Waiting for internet connection to load profile...',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[600], height: 1.4),
                 ),
@@ -97,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final profile = controller.profile.value;
       if (profile == null) {
-        return const Center(child: Text('Profil tidak tersedia.'));
+        return const Center(child: Text('Profile unavailable.'));
       }
 
       return RefreshIndicator(
@@ -133,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Profil Saya',
+                        'My Profile',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,
@@ -142,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       Text(
-                        'Kelola akun dan preferensi',
+                        'Manage your account and preferences',
                         style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
@@ -207,40 +209,83 @@ class _ProfilePageState extends State<ProfilePage> {
               children: <Widget>[
                 ProfileMenuTile(
                   icon: Icons.videogame_asset_outlined,
-                  title: 'Gudang Gear (Minigame)',
-                  subtitle: 'Main & dapatkan Voucher Steam!',
+                  title: 'Minigame',
+                  subtitle: 'Play & earn Steam Vouchers!',
                   onTap: () {
                     context.push(AppRouter.minigamesPath);
                   },
                 ),
               ],
             ),
-            const ProfileMenuSection(
+            ProfileMenuSection(
               children: <Widget>[
                 ProfileMenuTile(
                   icon: Icons.privacy_tip_outlined,
                   title: 'Testimonial',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const TestimonialPage(),
+                      ),
+                    );
+                  },
                 ),
-                ProfileMenuTile(icon: Icons.gpp_good_outlined, title: 'Advice'),
+                ProfileMenuTile(
+                  icon: Icons.gpp_good_outlined, 
+                  title: 'Advice',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AdvicePage(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  try {
-                    await authRepository.logout();
-                    if (!context.mounted) return;
-                    context.go('/login');
-                  } catch (error) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(supabaseUserMessage(error))),
-                    );
+                  final bool? confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        title: const Text('Confirm Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: const Text('Are you sure you want to log out of this account?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Yes, Log out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  
+                  if (confirm == true) {
+                    try {
+                      await authRepository.logout();
+                      if (!context.mounted) return;
+                      context.go('/login');
+                    } catch (error) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(supabaseUserMessage(error))),
+                      );
+                    }
                   }
                 },
-                icon: const Icon(Icons.logout),
-                label: const Text('Log out'),
+                icon: const Icon(Icons.logout, color: Colors.redAccent),
+                label: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.redAccent),
+                ),
               ),
             ),
           ],

@@ -58,7 +58,7 @@ class DealsController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal memuat daftar game. Coba lagi.',
+        fallbackMessage: 'Failed to load game list. Try again.',
       );
     } finally {
       isInitialLoading.value = false;
