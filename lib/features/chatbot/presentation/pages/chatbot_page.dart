@@ -172,12 +172,17 @@ class ChatbotPage extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight > 64 ? constraints.maxHeight - 64 : 0,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
             Container(
               width: 90,
               height: 90,
@@ -217,9 +222,11 @@ class ChatbotPage extends StatelessWidget {
                 _buildSuggestionChip(context, 'Rekomendasi game yang bagus?'),
               ],
             ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
