@@ -14,6 +14,8 @@ import 'package:khatorgame/features/profile/presentation/pages/notification_sett
 import 'package:khatorgame/features/profile/presentation/widgets/profile_header_card.dart';
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_section.dart';
 import 'package:khatorgame/features/profile/presentation/widgets/profile_menu_tile.dart';
+import 'package:khatorgame/features/profile/presentation/pages/testimonial_page.dart';
+import 'package:khatorgame/features/profile/presentation/pages/advice_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -215,13 +217,30 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-            const ProfileMenuSection(
+            ProfileMenuSection(
               children: <Widget>[
                 ProfileMenuTile(
                   icon: Icons.privacy_tip_outlined,
                   title: 'Testimonial',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const TestimonialPage(),
+                      ),
+                    );
+                  },
                 ),
-                ProfileMenuTile(icon: Icons.gpp_good_outlined, title: 'Advice'),
+                ProfileMenuTile(
+                  icon: Icons.gpp_good_outlined, 
+                  title: 'Advice',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AdvicePage(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             Padding(
