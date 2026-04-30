@@ -655,7 +655,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
           const SizedBox(height: 8),
           const Icon(Icons.videogame_asset, size: 80, color: Colors.amber),
           const SizedBox(height: 10),
-          const Text('Prize Minigames',
+          const Text('Minigame',
               style: TextStyle(color: Colors.black87, fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           _buildInstructionItem(Icons.edgesensor_low, 'Tilt Phone', 'Move the basket left/right.'),

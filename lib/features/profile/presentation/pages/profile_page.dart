@@ -209,7 +209,7 @@ class _ProfilePageState extends State<ProfilePage> {
               children: <Widget>[
                 ProfileMenuTile(
                   icon: Icons.videogame_asset_outlined,
-                  title: 'Gudang Gear (Minigames)',
+                  title: 'Minigame',
                   subtitle: 'Play & earn Steam Vouchers!',
                   onTap: () {
                     context.push(AppRouter.minigamesPath);
