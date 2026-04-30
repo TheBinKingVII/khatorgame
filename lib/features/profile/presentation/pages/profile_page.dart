@@ -247,19 +247,45 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  try {
-                    await authRepository.logout();
-                    if (!context.mounted) return;
-                    context.go('/login');
-                  } catch (error) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(supabaseUserMessage(error))),
-                    );
+                  final bool? confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        title: const Text('Confirm Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: const Text('Are you sure you want to log out of this account?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Yes, Log out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  
+                  if (confirm == true) {
+                    try {
+                      await authRepository.logout();
+                      if (!context.mounted) return;
+                      context.go('/login');
+                    } catch (error) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(supabaseUserMessage(error))),
+                      );
+                    }
                   }
                 },
-                icon: const Icon(Icons.logout),
-                label: const Text('Log out'),
+                icon: const Icon(Icons.logout, color: Colors.redAccent),
+                label: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.redAccent),
+                ),
               ),
             ),
           ],
