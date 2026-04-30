@@ -8,6 +8,7 @@ class NotificationSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProfileController controller = Get.find<ProfileController>();
+    final Color accentColor = Theme.of(context).colorScheme.primary;
 
     return Obx(() {
       final profile = controller.profile.value;
@@ -17,7 +18,13 @@ class NotificationSettingsPage extends StatelessWidget {
 
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications'),
+          toolbarHeight: 72,
+          title: const Text(
+            'Notifications',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: accentColor,
+          foregroundColor: Colors.white,
           automaticallyImplyLeading: false,
         ),
         body: ListView(
@@ -25,6 +32,8 @@ class NotificationSettingsPage extends StatelessWidget {
           children: <Widget>[
             SwitchListTile(
               value: profile.notificationsEnabled,
+              activeThumbColor: Colors.white,
+              activeTrackColor: accentColor,
               title: const Text('Push Notification'),
               subtitle: Text(
                 profile.notificationsEnabled

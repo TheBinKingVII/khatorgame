@@ -18,7 +18,7 @@ class WishlistPage extends StatelessWidget {
         // ─── Header ───────────────────────────────────────────────
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [primary, primary.withOpacity(0.8)],
@@ -42,7 +42,7 @@ class WishlistPage extends StatelessWidget {
                     'My Wishlist',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                     ),

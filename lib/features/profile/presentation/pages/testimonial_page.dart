@@ -8,7 +8,11 @@ class TestimonialPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Testimonial', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        toolbarHeight: 72,
+        title: const Text(
+          'Testimonial',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
@@ -23,7 +27,11 @@ class TestimonialPage extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 20),
               child: Text(
                 'Kesan Mata Kuliah\nTeknologi Pemrograman Mobile',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, height: 1.3),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
+                ),
               ),
             ),
             _buildCard(
@@ -31,7 +39,8 @@ class TestimonialPage extends StatelessWidget {
               name: 'Khatama',
               role: 'Mahasiswa',
               avatarIcon: Icons.person,
-              content: 'Mata kuliah Teknologi dan Pemrograman Mobile ini sangat seru dan menantang! Banyak hal baru yang bisa dipelajari, mulai dari fundamental UI/UX hingga integrasi fitur-fitur kompleks. Overall, ini adalah pengalaman belajar yang luar biasa.',
+              content:
+                  'Mata kuliah Teknologi dan Pemrograman Mobile ini sangat seru dan menantang! Banyak hal baru yang bisa dipelajari, mulai dari fundamental UI/UX hingga integrasi fitur-fitur kompleks. Overall, ini adalah pengalaman belajar yang luar biasa.',
             ),
             const SizedBox(height: 16),
             _buildCard(
@@ -39,7 +48,8 @@ class TestimonialPage extends StatelessWidget {
               name: 'Rekan Tim',
               role: 'Mahasiswa',
               avatarIcon: Icons.person_outline,
-              content: 'Materi yang disampaikan sangat relate dengan kebutuhan industri saat ini. Pembuatan aplikasi dari nol sampai jadi memberikan insight berharga tentang siklus pengembangan mobile app yang sesungguhnya.',
+              content:
+                  'Materi yang disampaikan sangat relate dengan kebutuhan industri saat ini. Pembuatan aplikasi dari nol sampai jadi memberikan insight berharga tentang siklus pengembangan mobile app yang sesungguhnya.',
             ),
           ],
         ),
@@ -47,7 +57,13 @@ class TestimonialPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(BuildContext context, {required String name, required String role, required IconData avatarIcon, required String content}) {
+  Widget _buildCard(
+    BuildContext context, {
+    required String name,
+    required String role,
+    required IconData avatarIcon,
+    required String content,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -68,27 +84,51 @@ class TestimonialPage extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(0.1),
                 radius: 24,
-                child: Icon(avatarIcon, color: Theme.of(context).colorScheme.primary, size: 28),
+                child: Icon(
+                  avatarIcon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(role, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  Text(
+                    role,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                 ],
               ),
               const Spacer(),
-              const Icon(Icons.format_quote_rounded, color: Colors.black12, size: 40),
+              const Icon(
+                Icons.format_quote_rounded,
+                color: Colors.black12,
+                size: 40,
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             '"$content"',
-            style: const TextStyle(height: 1.6, fontStyle: FontStyle.italic, fontSize: 14, color: Colors.black87),
+            style: const TextStyle(
+              height: 1.6,
+              fontStyle: FontStyle.italic,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),

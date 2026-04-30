@@ -54,6 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final ProfileController controller = Get.find<ProfileController>();
     final AuthRepository authRepository = Get.find<AuthRepository>();
+    final Color accentColor = Theme.of(context).colorScheme.primary;
 
     return Obx(() {
       if (controller.isLoading.value && controller.profile.value == null) {
@@ -115,15 +116,15 @@ class _ProfilePageState extends State<ProfilePage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    accentColor,
+                    accentColor.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                    color: accentColor.withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
