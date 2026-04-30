@@ -45,7 +45,7 @@ class InternetcafePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Warnet Radar',
+                        'Internet Cafe Radar',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,
@@ -54,7 +54,7 @@ class InternetcafePage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Temukan Warnet Terdekat',
+                        'Find Nearby Internet Cafes',
                         style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
@@ -75,7 +75,7 @@ class InternetcafePage extends StatelessWidget {
                 CircularProgressIndicator(color: primary),
                 const SizedBox(height: 20),
                 const Text(
-                  'Menghitung satelit\ndan lokasi kamu...',
+                  'Calculating satellites\nand your location...',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15, color: Colors.grey),
                 ),
@@ -103,7 +103,7 @@ class InternetcafePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    'Koneksi Bermasalah',
+                    'Connection Problem',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
@@ -116,7 +116,7 @@ class InternetcafePage extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () => controller.fetchLocationAndCafes(),
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Coba Lagi', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
                       foregroundColor: Colors.white,
@@ -232,7 +232,7 @@ class InternetcafePage extends StatelessWidget {
                           Icon(Icons.store_rounded, size: 16, color: primary),
                           const SizedBox(width: 5),
                           Text(
-                            '${controller.cafes.length} Warnet',
+                            '${controller.cafes.length} Cafes',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -257,7 +257,7 @@ class InternetcafePage extends StatelessWidget {
                   Icon(Icons.list_rounded, color: primary, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'Warnet Terdekat',
+                    'Nearby Internet Cafes',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -486,11 +486,11 @@ class InternetcafePage extends StatelessWidget {
                             '${cafe.address} • ${(cafe.distance / 1000).toStringAsFixed(1)} KM'),
                         const SizedBox(height: 10),
                         _infoRow(Icons.payments_rounded, Colors.green,
-                            '${cafe.pricePerHour} / Jam'),
+                            '${cafe.pricePerHour} / Hour'),
 
                         const SizedBox(height: 16),
                         Text(
-                          'Fasilitas',
+                          'Facilities',
                           style: TextStyle(fontWeight: FontWeight.bold, color: primary, fontSize: 14),
                         ),
                         const SizedBox(height: 10),
@@ -535,7 +535,7 @@ class InternetcafePage extends StatelessWidget {
                                     )
                                   : const Icon(Icons.route_rounded),
                               label: Text(
-                                ctrl.isFetchingRoute.value ? 'Mencari Rute...' : 'Tampilkan Rute di Peta',
+                                ctrl.isFetchingRoute.value ? 'Finding Route...' : 'Show Route on Map',
                                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                               onPressed: ctrl.isFetchingRoute.value

@@ -73,6 +73,6 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
       }
     }
     
-    throw Exception("Gagal menghubungi server setelah $maxRetries percobaan.");
+    throw Exception("Failed to contact server after $maxRetries attempts.");
   }
 }

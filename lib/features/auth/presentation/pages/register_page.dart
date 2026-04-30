@@ -50,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Register berhasil, silakan login')),
+        const SnackBar(content: Text('Registration successful, please login')),
       );
       context.go('/login');
     } catch (error) {
@@ -128,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
                               Text(
-                                'Buat akun baru',
+                                'Create new account',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w700,
@@ -137,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Daftar untuk mulai nikmati semua fitur.',
+                                'Register to start enjoying all features.',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: Colors.white,
@@ -148,7 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: _nameController,
                                 inputFormatters: InputValidator.nameFormatters,
                                 decoration: const InputDecoration(
-                                  hintText: 'Nama lengkap',
+                                  hintText: 'Full name',
                                   border: OutlineInputBorder(),
                                   filled: true,
                                   fillColor: Colors.white,
@@ -208,7 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 inputFormatters:
                                     InputValidator.passwordFormatters,
                                 decoration: InputDecoration(
-                                  hintText: 'Konfirmasi password',
+                                  hintText: 'Confirm password',
                                   border: const OutlineInputBorder(),
                                   filled: true,
                                   fillColor: Colors.white,
@@ -234,11 +234,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                       InputValidator.validatePassword(value);
                                   if (basicValidation != null) {
                                     return value == null || value.isEmpty
-                                        ? 'Konfirmasi password wajib diisi'
+                                        ? 'Confirm password is required'
                                         : basicValidation;
                                   }
                                   if (value != _passwordController.text) {
-                                    return 'Password tidak sama';
+                                    return 'Passwords do not match';
                                   }
                                   return null;
                                 },
@@ -270,7 +270,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,
                                 ),
-                                child: const Text('Sudah punya akun? Login'),
+                                child: const Text('Already have an account? Login'),
                               ),
                             ],
                           ),

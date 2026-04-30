@@ -103,7 +103,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
   ) async {
     if (metacriticLink.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link Metacritic tidak tersedia')),
+        const SnackBar(content: Text('Metacritic link unavailable')),
       );
       return;
     }
@@ -115,7 +115,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     );
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal membuka link Metacritic')),
+        const SnackBar(content: Text('Failed to open Metacritic link')),
       );
     }
   }
@@ -130,7 +130,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("Detail Game", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("Game Details", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: <Widget>[
           Padding(
             padding: EdgeInsetsGeometry.only(right: 8),
@@ -139,7 +139,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                 (WishlistItemEntity e) => e.dealId == widget.dealId,
               );
               return IconButton(
-                tooltip: isFav ? 'Hapus dari wishlist' : 'Tambah ke wishlist',
+                tooltip: isFav ? 'Remove from wishlist' : 'Add to wishlist',
                 onPressed: () async {
                   try {
                     final String currencyCode =
@@ -160,8 +160,8 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                       SnackBar(
                         content: Text(
                           wasFav
-                              ? 'Dihapus dari wishlist'
-                              : 'Ditambahkan ke wishlist',
+                              ? 'Removed from wishlist'
+                              : 'Added to wishlist',
                         ),
                       ),
                     );
@@ -196,7 +196,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                     child: Text(
                       mapErrorToUserMessage(
                         snapshot.error!,
-                        fallbackMessage: 'Gagal memuat detail game. Coba lagi.',
+                        fallbackMessage: 'Failed to load game details. Try again.',
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -255,12 +255,12 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                           ),
                           const SizedBox(height: 16),
                           _DetailTile(
-                            label: 'Harga Sale',
+                            label: 'Sale Price',
                             value: prices.salePrice,
                             valueColor: Colors.green.shade700,
                           ),
                           _DetailTile(
-                            label: 'Harga Normal',
+                            label: 'Normal Price',
                             value: prices.retailPrice,
                           ),
                           _DetailTile(
@@ -272,7 +272,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                             value: detail.metacriticScore,
                           ),
                           _DetailTile(
-                            label: 'Harga Termurah Sepanjang Waktu',
+                            label: 'Cheapest Historical Price',
                             value: prices.historicalPrice,
                           ),
                           const SizedBox(height: 6),
@@ -286,7 +286,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: Theme.of(context).colorScheme.primary,
                                   ),
-                                  label: const Text('Buka Halaman Metacritic'),
+                                  label: const Text('Open Metacritic Page'),
                                 )
                               : const SizedBox.shrink(),
                         ],

@@ -77,12 +77,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
                 const SizedBox(height: 16),
                 const Text(
-                  'Koneksi Terputus',
+                  'No Internet Connection',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.redAccent),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Menunggu koneksi internet pulih untuk memuat profil...',
+                  'Waiting for internet connection to load profile...',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[600], height: 1.4),
                 ),
@@ -99,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final profile = controller.profile.value;
       if (profile == null) {
-        return const Center(child: Text('Profil tidak tersedia.'));
+        return const Center(child: Text('Profile unavailable.'));
       }
 
       return RefreshIndicator(
@@ -135,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Profil Saya',
+                        'My Profile',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 17,
@@ -144,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       Text(
-                        'Kelola akun dan preferensi',
+                        'Manage your account and preferences',
                         style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
@@ -209,8 +209,8 @@ class _ProfilePageState extends State<ProfilePage> {
               children: <Widget>[
                 ProfileMenuTile(
                   icon: Icons.videogame_asset_outlined,
-                  title: 'Gudang Gear (Minigame)',
-                  subtitle: 'Main & dapatkan Voucher Steam!',
+                  title: 'Gudang Gear (Minigames)',
+                  subtitle: 'Play & earn Steam Vouchers!',
                   onTap: () {
                     context.push(AppRouter.minigamesPath);
                   },

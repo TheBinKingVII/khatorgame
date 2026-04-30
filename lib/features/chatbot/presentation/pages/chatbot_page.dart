@@ -148,7 +148,7 @@ class ChatbotPage extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'AI sedang berpikir...',
+                              'Sedang Berpikir...',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],
@@ -202,7 +202,7 @@ class ChatbotPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Tanya aku soal game, diskon, atau rekomendasi game murah favoritmu!',
+              'Tanyakan tentang game, diskon, atau rekomendasi game murah!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
             ),
@@ -212,9 +212,9 @@ class ChatbotPage extends StatelessWidget {
               runSpacing: 8,
               alignment: WrapAlignment.center,
               children: [
-                _buildSuggestionChip(context, '🎮 Game diskon sekarang?'),
-                _buildSuggestionChip(context, '💸 Game RPG termurah?'),
-                _buildSuggestionChip(context, '⭐ Rekomendasi game bagus'),
+                _buildSuggestionChip(context, 'Game apa saja yang sedang diskon?'),
+                _buildSuggestionChip(context, 'Rekomendasi game RPG termurah?'),
+                _buildSuggestionChip(context, 'Rekomendasi game yang bagus?'),
               ],
             ),
           ],
@@ -353,7 +353,7 @@ class ChatbotPage extends StatelessWidget {
                   maxLines: 4,
                   minLines: 1,
                   decoration: InputDecoration(
-                    hintText: 'Tanya soal game atau diskon...',
+                    hintText: 'Tanyakan tentang game atau diskon...',
                     hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(

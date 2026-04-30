@@ -84,7 +84,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               controller: _nameController,
               inputFormatters: InputValidator.nameFormatters,
               decoration: const InputDecoration(
-                labelText: 'Nama Lengkap',
+                labelText: 'Full Name',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -121,7 +121,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         if (!context.mounted) return;
                         messenger.showSnackBar(
                           const SnackBar(
-                            content: Text('Profil berhasil disimpan'),
+                            content: Text('Profile saved successfully'),
                           ),
                         );
                         navigator.pop();
@@ -138,7 +138,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Simpan'),
+                  : const Text('Save'),
             ),
           ],
         ),

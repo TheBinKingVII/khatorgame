@@ -8,14 +8,14 @@ import 'failures/failures.dart';
 
 String mapErrorToUserMessage(
   Object error, {
-  String fallbackMessage = 'Terjadi kesalahan. Silakan coba lagi.',
+  String fallbackMessage = 'An error occurred. Please try again.',
 }) {
   if (error is Failure) {
     return error.message;
   }
 
   if (error is SocketException || error is TimeoutException) {
-    return 'Jaringan Anda bermasalah. Periksa koneksi internet lalu coba lagi.';
+    return 'There is network problem. Please check your internet connection and try again.';
   }
 
   if (error is DioException) {
@@ -25,9 +25,9 @@ String mapErrorToUserMessage(
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.unknown:
-        return 'Jaringan Anda bermasalah. Periksa koneksi internet lalu coba lagi.';
+        return 'There is network problem. Please check your internet connection and try again.';
       case DioExceptionType.badResponse:
-        return 'Layanan sedang bermasalah. Coba beberapa saat lagi.';
+        return 'Server is having some problems. Please try again later.';
       case DioExceptionType.badCertificate:
       case DioExceptionType.cancel:
         return fallbackMessage;
@@ -36,35 +36,35 @@ String mapErrorToUserMessage(
 
   if (error is PostgrestException) {
     if (error.code == '23505') {
-      return 'Data sudah pernah ditambahkan sebelumnya.';
+      return 'Data already added before.';
     }
     if (error.code == '23503') {
-      return 'Data akun tidak valid. Silakan login ulang.';
+      return 'Invalid account data. Please log in again.';
     }
     if (error.code == '42501') {
-      return 'Anda tidak memiliki akses untuk aksi ini.';
+      return 'You do not have permission to perform this action.';
     }
-    return 'Layanan sedang bermasalah. Coba beberapa saat lagi.';
+    return 'Server is having some problems. Please try again later.';
   }
 
   if (error is StateError) {
-    return 'Sesi Anda berakhir. Silakan login kembali.';
+    return 'Session has expired. Please log in again.';
   }
 
   final String message = error.toString().toLowerCase();
-  if (message.contains('email belum terdaftar') ||
-      message.contains('password salah') ||
-      message.contains('akun tidak aktif')) {
-    return 'Email atau password tidak sesuai.';
+  if (message.contains('email not registered') ||
+      message.contains('wrong password') ||
+      message.contains('account is not active')) {
+    return 'Email or password is not match.';
   }
-  if (message.contains('email sudah digunakan')) {
-    return 'Email sudah digunakan. Silakan pakai email lain.';
+  if (message.contains('email is already used')) {
+    return 'Email is already used. Please use another email.';
   }
-  if (message.contains('biometrik belum diaktifkan')) {
-    return 'Biometrik belum aktif di akun ini.';
+  if (message.contains('biometric not activated')) {
+    return 'Biometric is not activated in this account.';
   }
-  if (message.contains('verifikasi biometrik')) {
-    return 'Verifikasi biometrik gagal atau dibatalkan.';
+  if (message.contains('biometric verification')) {
+    return 'Biometric verification failed or cancelled.';
   }
 
   return fallbackMessage;

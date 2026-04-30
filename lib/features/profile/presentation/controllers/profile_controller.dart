@@ -74,7 +74,7 @@ class ProfileController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal memuat profil. Coba lagi.',
+        fallbackMessage: 'Failed to load profile. Try again.',
       );
     } finally {
       isLoading.value = false;

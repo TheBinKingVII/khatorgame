@@ -51,7 +51,7 @@ class _BiometricSettingsPageState extends State<BiometricSettingsPage> {
                     ? 'Biometrik berhasil diaktifkan'
                     : 'Biometrik dinonaktifkan')
               : (_controller.biometricStatusMessage.value ??
-                    'Gagal mengaktifkan biometrik'),
+                    'Failed to enable biometrics'),
         ),
       ),
     );

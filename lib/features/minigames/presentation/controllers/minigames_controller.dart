@@ -28,7 +28,7 @@ class MinigamesController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal memuat data minigame. Coba lagi.',
+        fallbackMessage: 'Failed to load minigames data. Try again.',
       );
     } finally {
       isLoading.value = false;
@@ -64,7 +64,7 @@ class MinigamesController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal klaim voucher. Coba lagi.',
+        fallbackMessage: 'Failed to claim voucher. Try again.',
       );
       return null;
     } finally {

@@ -82,7 +82,7 @@ class InternetcafeController extends GetxController {
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,
-        fallbackMessage: 'Gagal memuat lokasi dan data warnet. Coba lagi.',
+        fallbackMessage: 'Failed to load location and internet cafes. Try again.',
       );
     } finally {
       isLoading.value = false;
@@ -135,7 +135,7 @@ class InternetcafeController extends GetxController {
       throw Exception(
         mapErrorToUserMessage(
           error,
-          fallbackMessage: 'Gagal memuat rute jalan. Coba lagi nanti.',
+          fallbackMessage: 'Failed to load route. Try again later.',
         ),
       );
     } catch (error) {
