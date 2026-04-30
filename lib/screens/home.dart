@@ -22,9 +22,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: (currentIndex == 2 || currentIndex == 3)
-          ? child
-          : SafeArea(child: child),
+      body: SafeArea(child: child),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
