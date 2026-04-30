@@ -646,9 +646,15 @@ class _MinigamesPageState extends State<MinigamesPage> {
 
   // === UI LOBBY (MENU AWAL) ===
   Widget _buildLobbyUI({Key? key}) {
-    return SingleChildScrollView(
-      key: key,
-      padding: const EdgeInsets.all(24.0),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _controller.loadGameData();
+        await _checkConnectivity();
+      },
+      child: SingleChildScrollView(
+        key: key,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -718,6 +724,14 @@ class _MinigamesPageState extends State<MinigamesPage> {
                   child: const Text('✅ Reward Claimed!\nCome back tomorrow',
                       textAlign: TextAlign.center, style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
                 );
+              } else if (!_controller.isVoucherAvailable.value) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: const Text('❌ Out of Stock!\nVouchers are currently unavailable',
+                      textAlign: TextAlign.center, style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                );
               } else {
                 return SizedBox(
                   width: double.infinity, height: 60,
@@ -748,6 +762,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
           )),
           const SizedBox(height: 16),
         ],
+      ),
       ),
     );
   }

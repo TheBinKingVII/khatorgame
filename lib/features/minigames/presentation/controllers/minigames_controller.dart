@@ -12,6 +12,7 @@ class MinigamesController extends GetxController {
   final RxBool isClaiming = false.obs;
   final RxBool hasClaimedToday = false.obs;
   final RxList<String> collectedVouchers = <String>[].obs;
+  final RxBool isVoucherAvailable = true.obs;
   final RxString errorMessage = ''.obs;
 
   @override
@@ -25,6 +26,7 @@ class MinigamesController extends GetxController {
     try {
       hasClaimedToday.value = await usecase.hasClaimedToday();
       collectedVouchers.value = await usecase.getCollectedVouchers();
+      isVoucherAvailable.value = await usecase.checkVoucherAvailability();
     } catch (error) {
       errorMessage.value = mapErrorToUserMessage(
         error,

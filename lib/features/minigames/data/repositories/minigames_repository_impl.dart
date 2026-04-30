@@ -18,6 +18,11 @@ class MinigamesRepositoryImpl implements MinigamesRepository {
   }
 
   @override
+  Future<bool> checkVoucherAvailability() {
+    return remoteDataSource.checkVoucherAvailability();
+  }
+
+  @override
   Future<List<String>> getCollectedVouchers() {
     return localDataSource.getCollectedVouchers();
   }

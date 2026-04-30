@@ -23,6 +23,10 @@ class MinigamesUsecase {
     return repository.getCollectedVouchers();
   }
 
+  Future<bool> checkVoucherAvailability() {
+    return repository.checkVoucherAvailability();
+  }
+
   Future<bool> hasClaimedToday() {
     return repository.hasClaimedToday();
   }
