@@ -8,6 +8,7 @@ class CurrencyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProfileController controller = Get.find<ProfileController>();
+    final Color accentColor = Theme.of(context).colorScheme.primary;
 
     return Obx(() {
       final profile = controller.profile.value;
@@ -16,7 +17,16 @@ class CurrencyPage extends StatelessWidget {
       }
 
       return Scaffold(
-        appBar: AppBar(title: const Text('Currency')),
+        appBar: AppBar(
+          toolbarHeight: 72,
+          title: const Text(
+            'Currency',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: accentColor,
+          foregroundColor: Colors.white,
+          automaticallyImplyLeading: false,
+        ),
         body: ListView.builder(
           itemCount: controller.currencies.length,
           itemBuilder: (BuildContext context, int index) {
@@ -25,6 +35,10 @@ class CurrencyPage extends StatelessWidget {
             return ListTile(
               leading: Icon(
                 selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                color:
+                    selected
+                        ? accentColor
+                        : accentColor.withValues(alpha: 0.45),
               ),
               title: Text('${option.label} (${option.symbol})'),
               subtitle: Text(option.code),
@@ -49,4 +63,3 @@ class CurrencyPage extends StatelessWidget {
     });
   }
 }
-

@@ -59,9 +59,17 @@ class _BiometricSettingsPageState extends State<BiometricSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Color accentColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Biometric Login'),
+        toolbarHeight: 72,
+        title: const Text(
+          'Biometric Login',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       body: _checkingSupport
@@ -80,6 +88,8 @@ class _BiometricSettingsPageState extends State<BiometricSettingsPage> {
                   Card(
                     child: SwitchListTile(
                       value: isEnabled,
+                      activeThumbColor: Colors.white,
+                      activeTrackColor: accentColor,
                       onChanged: switchEnabled ? _onChanged : null,
                       title: const Text('Enable Biometric Login'),
                       subtitle: Text(
