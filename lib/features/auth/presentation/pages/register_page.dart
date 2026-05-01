@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/core/utils/input_validator.dart';
-import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
+import 'package:khatorgame/features/auth/presentation/controllers/auth_controller.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,7 +13,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final AuthRepository _authRepository = Get.find<AuthRepository>();
+  final AuthController _authController = Get.find<AuthController>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -23,7 +23,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -37,12 +36,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _onRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      await _authRepository.register(
+      await _authController.register(
         fullName: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -58,11 +53,6 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(mapErrorToUserMessage(error))));
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -71,8 +61,11 @@ class _RegisterPageState extends State<RegisterPage> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      body: Container(
+    return Obx(() {
+      final bool isLoading = _authController.isRegisterLoading.value;
+
+      return Scaffold(
+        body: Container(
         decoration: const BoxDecoration(color: Colors.white),
         child: SafeArea(
           child: Center(
@@ -252,8 +245,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                     backgroundColor: Colors.white,
                                     foregroundColor: colorScheme.primary,
                                   ),
-                                  onPressed: _isLoading ? null : _onRegister,
-                                  child: _isLoading
+                                  onPressed: isLoading ? null : _onRegister,
+                                  child: isLoading
                                       ? const SizedBox(
                                           width: 20,
                                           height: 20,
@@ -284,6 +277,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ),
-    );
+      );
+    });
   }
 }
