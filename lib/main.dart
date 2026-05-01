@@ -32,6 +32,7 @@ import 'package:khatorgame/features/minigames/domain/usecases/minigames_usecase.
 import 'package:khatorgame/features/minigames/presentation/controllers/minigames_controller.dart';
 import 'package:khatorgame/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
+import 'package:khatorgame/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:khatorgame/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:khatorgame/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:khatorgame/features/profile/domain/repositories/profile_repository.dart';
@@ -119,6 +120,10 @@ void setupDependencies() {
 
   // 4. Auth
   Get.put<AuthRepository>(AuthRepositoryImpl(), permanent: true);
+  Get.put<AuthController>(
+    AuthController(Get.find<AuthRepository>()),
+    permanent: true,
+  );
 
   // 5. Deals
   Get.put<DealsRemoteDataSource>(DealsRemoteDataSource(), permanent: true);
