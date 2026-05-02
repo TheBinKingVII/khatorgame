@@ -45,7 +45,7 @@ class AdvicePage extends StatelessWidget {
             const SizedBox(height: 16),
             _buildCard(
               context,
-              name: 'Rekan Tim',
+              name: 'Bintoro',
               role: 'Mahasiswa',
               avatarIcon: Icons.person_outline,
               content:

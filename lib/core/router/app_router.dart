@@ -76,7 +76,7 @@ class AppRouter {
           GoRoute(
             path: internetcafePath,
             builder: (BuildContext context, GoRouterState state) =>
-                InternetcafePage(),
+                const InternetcafePage(),
           ),
           GoRoute(
             path: minigamesPath,
