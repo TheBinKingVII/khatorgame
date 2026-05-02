@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:khatorgame/core/utils/input_validator.dart';
 import '../controllers/chatbot_controller.dart';
 
@@ -388,12 +389,20 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   ),
                 ],
               ),
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  color: isUser ? Colors.white : Colors.black87,
-                  fontSize: 14.5,
-                  height: 1.4,
+              child: MarkdownBody(
+                data: message.text,
+                styleSheet: MarkdownStyleSheet(
+                  p: TextStyle(
+                    color: isUser ? Colors.white : Colors.black87,
+                    fontSize: 14.5,
+                    height: 1.4,
+                  ),
+                  strong: TextStyle(
+                    color: isUser ? Colors.white : Colors.black87,
+                    fontSize: 14.5,
+                    height: 1.4,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
