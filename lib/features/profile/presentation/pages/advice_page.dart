@@ -37,19 +37,19 @@ class AdvicePage extends StatelessWidget {
             _buildCard(
               context,
               name: 'Khatama',
-              role: 'Mahasiswa',
+              role: 'Korban TPM 1',
               avatarIcon: Icons.person,
               content:
-                  'Saran saya, mungkin ke depannya bisa diperbanyak porsi materi mengenai best practices struktur folder dan arsitektur aplikasi (seperti Clean Architecture) agar mahasiswa lebih siap beradaptasi dengan standar industri.',
+                  'Semoga teori di kelas bisa lebih banyak disampaikan ke mahasiswa.',
             ),
             const SizedBox(height: 16),
             _buildCard(
               context,
-              name: 'Rekan Tim',
-              role: 'Mahasiswa',
+              name: 'Bintoro',
+              role: 'Korban TPM 2',
               avatarIcon: Icons.person_outline,
               content:
-                  'Akan sangat menarik jika ada sesi khusus untuk bedah kode atau eksplorasi paket-paket populer di pub.dev secara lebih mendalam untuk menunjang kecepatan pengembangan UI/UX.',
+                  'Surat Terbuka untuk Pak Bagus, Semoga Mobile kedepannya lebih brutal dari sekarang. Tolong siksa angkatan selanjutnya. Oh ya prodi satunya juga tolong disiksa.',
             ),
           ],
         ),

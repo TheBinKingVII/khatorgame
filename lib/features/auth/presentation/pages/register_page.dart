@@ -148,6 +148,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   prefixIcon: Icon(
                                     Icons.person_outline_rounded,
                                   ),
+                                  errorStyle: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 validator: InputValidator.validateFullName,
                               ),
@@ -162,6 +166,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   filled: true,
                                   fillColor: Colors.white,
                                   prefixIcon: Icon(Icons.mail_outline_rounded),
+                                  errorStyle: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 validator: InputValidator.validateEmail,
                               ),
@@ -176,6 +184,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   border: const OutlineInputBorder(),
                                   filled: true,
                                   fillColor: Colors.white,
+                                  errorStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                   prefixIcon: const Icon(
                                     Icons.lock_outline_rounded,
                                   ),
@@ -205,6 +217,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   border: const OutlineInputBorder(),
                                   filled: true,
                                   fillColor: Colors.white,
+                                  errorStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                   prefixIcon: const Icon(
                                     Icons.lock_reset_rounded,
                                   ),

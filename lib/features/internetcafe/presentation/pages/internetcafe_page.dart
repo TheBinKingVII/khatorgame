@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,10 +9,40 @@ import 'package:latlong2/latlong.dart';
 import '../controllers/internetcafe_controller.dart';
 import '../../domain/entities/internetcafe_entity.dart';
 
-class InternetcafePage extends StatelessWidget {
-  final MapController mapController = MapController();
+class InternetcafePage extends StatefulWidget {
+  const InternetcafePage({super.key});
 
-  InternetcafePage({super.key});
+  @override
+  State<InternetcafePage> createState() => _InternetcafePageState();
+}
+
+class _InternetcafePageState extends State<InternetcafePage> {
+  final MapController mapController = MapController();
+  Timer? _connectivityTimer;
+
+  @override
+  void dispose() {
+    _connectivityTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startConnectivityCheck(InternetcafeController controller) {
+    _connectivityTimer?.cancel();
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      try {
+        final result = await InternetAddress.lookup('google.com')
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          timer.cancel();
+          if (mounted) {
+            await controller.fetchLocationAndCafes();
+          }
+        }
+      } catch (_) {
+        // Still offline, keep polling
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,53 +117,43 @@ class InternetcafePage extends StatelessWidget {
           );
         }
 
-        // State: Error
+        // State: Error (same pattern as Profile / Deals offline UI)
         if (controller.errorMessage.value.isNotEmpty) {
+          if (_connectivityTimer == null || !_connectivityTimer!.isActive) {
+            _startConnectivityCheck(controller);
+          }
+
           return Center(
             child: Padding(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.redAccent),
-                  ),
-                  const SizedBox(height: 20),
+                  const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+                  const SizedBox(height: 16),
                   const Text(
-                    'Connection Problem',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    controller.errorMessage.value,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
-                  ),
-                  const SizedBox(height: 28),
-                  ElevatedButton.icon(
-                    onPressed: () => controller.fetchLocationAndCafes(),
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 4,
-                      shadowColor: primary.withOpacity(0.4),
+                    'No Internet Connection',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.redAccent,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Waiting for internet connection to load internet cafes...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600], height: 1.4),
+                  ),
+                  const SizedBox(height: 32),
+                  CircularProgressIndicator(color: primary),
                 ],
               ),
             ),
           );
         }
+
+        _connectivityTimer?.cancel();
 
         final userPos = controller.userLocation.value;
         if (userPos == null) return const SizedBox.shrink();

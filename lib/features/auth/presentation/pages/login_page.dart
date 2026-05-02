@@ -159,6 +159,10 @@ class _LoginPageState extends State<LoginPage> {
                                     prefixIcon: Icon(
                                       Icons.mail_outline_rounded,
                                     ),
+                                    errorStyle: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                   validator: InputValidator.validateEmail,
                                 ),
@@ -173,6 +177,10 @@ class _LoginPageState extends State<LoginPage> {
                                     border: const OutlineInputBorder(),
                                     filled: true,
                                     fillColor: Colors.white,
+                                    errorStyle: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
                                     prefixIcon: const Icon(
                                       Icons.lock_outline_rounded,
                                     ),

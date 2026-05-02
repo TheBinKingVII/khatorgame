@@ -37,19 +37,19 @@ class TestimonialPage extends StatelessWidget {
             _buildCard(
               context,
               name: 'Khatama',
-              role: 'Mahasiswa',
+              role: 'Korban TPM 1',
               avatarIcon: Icons.person,
               content:
-                  'Mata kuliah Teknologi dan Pemrograman Mobile ini sangat seru dan menantang! Banyak hal baru yang bisa dipelajari, mulai dari fundamental UI/UX hingga integrasi fitur-fitur kompleks. Overall, ini adalah pengalaman belajar yang luar biasa.',
+                  'Selain nyiapin storage gede, ngoding mobile juga harus nyiapin mental baja.',
             ),
             const SizedBox(height: 16),
             _buildCard(
               context,
-              name: 'Rekan Tim',
-              role: 'Mahasiswa',
+              name: 'Bintoro',
+              role: 'Korban TPM 2',
               avatarIcon: Icons.person_outline,
               content:
-                  'Materi yang disampaikan sangat relate dengan kebutuhan industri saat ini. Pembuatan aplikasi dari nol sampai jadi memberikan insight berharga tentang siklus pengembangan mobile app yang sesungguhnya.',
+                  'Pagi-pagi Mas Anis makan Ikan Buntal, makannya ditemenin Pak Bagus. Terimakasih Mobile brutal, gak lagi-lagi deh, SERIUS!',
             ),
           ],
         ),
