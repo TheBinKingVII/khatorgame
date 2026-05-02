@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/utils/currency_price_formatter.dart';
@@ -19,6 +22,7 @@ class _DealsPageState extends State<DealsPage> {
   final ProfileController _profileController = Get.find<ProfileController>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  Timer? _connectivityTimer;
 
   @override
   void initState() {
@@ -29,10 +33,29 @@ class _DealsPageState extends State<DealsPage> {
 
   @override
   void dispose() {
+    _connectivityTimer?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _startConnectivityCheck() {
+    _connectivityTimer?.cancel();
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      try {
+        final result = await InternetAddress.lookup('google.com')
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          timer.cancel();
+          if (mounted) {
+            await _controller.loadInitialDeals();
+          }
+        }
+      } catch (_) {
+        // Still offline, keep polling
+      }
+    });
   }
 
   void _onScroll() {
@@ -164,16 +187,41 @@ class _DealsPageState extends State<DealsPage> {
     }
 
     if (_controller.errorMessage.value != null) {
+      if (_connectivityTimer == null || !_connectivityTimer!.isActive) {
+        _startConnectivityCheck();
+      }
+
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            'Failed to load deals.\n${_controller.errorMessage.value}',
-            textAlign: TextAlign.center,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+              const SizedBox(height: 16),
+              const Text(
+                'No Internet Connection',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Waiting for internet connection to load deals...',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600], height: 1.4),
+              ),
+              const SizedBox(height: 32),
+              CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+            ],
           ),
         ),
       );
     }
+
+    _connectivityTimer?.cancel();
 
     if (_controller.isSearchMode) {
       return _buildSearchResult();

@@ -54,10 +54,16 @@ String mapErrorToUserMessage(
   final String message = error.toString().toLowerCase();
   if (message.contains('email not registered') ||
       message.contains('wrong password') ||
-      message.contains('account is not active')) {
-    return 'Email or password is not match.';
+      message.contains('email belum terdaftar') ||
+      message.contains('password salah')) {
+    return 'Your username or password is incorrect.';
   }
-  if (message.contains('email is already used')) {
+  if (message.contains('account is not active') ||
+      message.contains('akun tidak aktif')) {
+    return 'Your account is inactive.';
+  }
+  if (message.contains('email is already used') ||
+      message.contains('email sudah digunakan')) {
     return 'Email is already used. Please use another email.';
   }
   if (message.contains('biometric not activated')) {

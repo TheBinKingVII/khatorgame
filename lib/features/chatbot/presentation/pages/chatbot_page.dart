@@ -1,13 +1,74 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/utils/input_validator.dart';
 import '../controllers/chatbot_controller.dart';
 
-class ChatbotPage extends StatelessWidget {
+class ChatbotPage extends StatefulWidget {
+  const ChatbotPage({Key? key}) : super(key: key);
+
+  @override
+  State<ChatbotPage> createState() => _ChatbotPageState();
+}
+
+class _ChatbotPageState extends State<ChatbotPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  Timer? _connectivityTimer;
+  bool _isCheckingConnectivity = true;
+  bool _isOffline = false;
 
-  ChatbotPage({Key? key}) : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    _verifyConnectivity();
+  }
+
+  @override
+  void dispose() {
+    _connectivityTimer?.cancel();
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<bool> _isNetworkOffline() async {
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+      return result.isEmpty || result[0].rawAddress.isEmpty;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<void> _verifyConnectivity() async {
+    final offline = await _isNetworkOffline();
+    if (!mounted) return;
+    setState(() {
+      _isOffline = offline;
+      _isCheckingConnectivity = false;
+    });
+    if (offline) {
+      _startConnectivityCheck();
+    } else {
+      _connectivityTimer?.cancel();
+    }
+  }
+
+  void _startConnectivityCheck() {
+    _connectivityTimer?.cancel();
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (!await _isNetworkOffline()) {
+        timer.cancel();
+        if (mounted) {
+          setState(() => _isOffline = false);
+        }
+      }
+    });
+  }
 
   void _handleSend(BuildContext context, ChatbotController controller) {
     final String text = _textController.text.trim();
@@ -23,7 +84,6 @@ class ChatbotPage extends StatelessWidget {
     }
     controller.sendMessage(text);
     _textController.clear();
-    // Scroll ke bawah setelah kirim
     Future.delayed(const Duration(milliseconds: 150), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -33,6 +93,37 @@ class ChatbotPage extends StatelessWidget {
         );
       }
     });
+  }
+
+  Widget _buildOfflineBody(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            const Text(
+              'No Internet Connection',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Waiting for internet connection to use Khator AI...',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], height: 1.4),
+            ),
+            const SizedBox(height: 32),
+            CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -86,87 +177,85 @@ class ChatbotPage extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Chat Area
-          Expanded(
-            child: Obx(() {
-              if (controller.messages.isEmpty) {
-                return _buildEmptyState(context);
-              }
-              // Auto-scroll ketika ada pesan baru
-              Future.delayed(const Duration(milliseconds: 100), () {
-                if (_scrollController.hasClients) {
-                  _scrollController.animateTo(
-                    _scrollController.position.maxScrollExtent,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                }
-              });
-              return ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                itemCount: controller.messages.length,
-                itemBuilder: (context, index) {
-                  final message = controller.messages[index];
-                  return _buildChatBubble(context, message);
-                },
-              );
-            }),
-          ),
-
-          // Loading Indicator
-          Obx(() => controller.isLoading.value
-              ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+      body: _isCheckingConnectivity
+          ? const Center(child: CircularProgressIndicator())
+          : _isOffline
+              ? _buildOfflineBody(context)
+              : Column(
+                  children: [
+                    Expanded(
+                      child: Obx(() {
+                        if (controller.messages.isEmpty) {
+                          return _buildEmptyState(context);
+                        }
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          if (_scrollController.hasClients) {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        });
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          itemCount: controller.messages.length,
+                          itemBuilder: (context, index) {
+                            final message = controller.messages[index];
+                            return _buildChatBubble(context, message);
+                          },
+                        );
+                      }),
+                    ),
+                    Obx(() => controller.isLoading.value
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Sedang Berpikir...',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Sedang Berpikir...',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : const SizedBox.shrink()),
-
-          // Input Area
-          _buildInputArea(context, controller),
-        ],
-      ),
+                          )
+                        : const SizedBox.shrink()),
+                    _buildInputArea(context, controller),
+                  ],
+                ),
     );
   }
 
@@ -183,45 +272,45 @@ class ChatbotPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.smart_toy_rounded, size: 48, color: primary),
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.smart_toy_rounded, size: 48, color: primary),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Halo! Aku Khator AI 👋',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: primary,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Tanyakan tentang game, diskon, atau rekomendasi game murah!',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                _buildSuggestionChip(context, 'Game apa saja yang sedang diskon?'),
-                _buildSuggestionChip(context, 'Rekomendasi game RPG termurah?'),
-                _buildSuggestionChip(context, 'Rekomendasi game yang bagus?'),
-              ],
-            ),
+                const SizedBox(height: 20),
+                Text(
+                  'Halo! Aku Khator AI 👋',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: primary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Tanyakan tentang game, diskon, atau rekomendasi game murah!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildSuggestionChip(context, 'Game apa saja yang sedang diskon?'),
+                    _buildSuggestionChip(context, 'Rekomendasi game RPG termurah?'),
+                    _buildSuggestionChip(context, 'Rekomendasi game yang bagus?'),
+                  ],
+                ),
               ],
             ),
           ),
@@ -259,7 +348,6 @@ class ChatbotPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
-            // Avatar AI
             Container(
               width: 32,
               height: 32,
@@ -311,7 +399,6 @@ class ChatbotPage extends StatelessWidget {
             ),
           ),
           if (isUser) ...[
-            // Avatar User
             Container(
               width: 32,
               height: 32,
