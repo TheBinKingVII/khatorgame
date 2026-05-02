@@ -35,24 +35,29 @@ class WishlistPage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'My Wishlist',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
+              Obx(
+                () => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'My Wishlist',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${controller.items.length} games saved',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                ],
-              )),
+                    Text(
+                      '${controller.items.length} games saved',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -68,7 +73,10 @@ class WishlistPage extends StatelessWidget {
                   children: [
                     CircularProgressIndicator(color: primary),
                     const SizedBox(height: 16),
-                    const Text('Loading wishlist...', style: TextStyle(color: Colors.grey)),
+                    const Text(
+                      'Loading wishlist...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
               );
@@ -93,7 +101,11 @@ class WishlistPage extends StatelessWidget {
                               color: primary.withOpacity(0.08),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.favorite_border_rounded, size: 44, color: primary.withOpacity(0.5)),
+                            child: Icon(
+                              Icons.favorite_border_rounded,
+                              size: 44,
+                              color: primary.withOpacity(0.5),
+                            ),
                           ),
                           const SizedBox(height: 20),
                           Text(
@@ -108,7 +120,11 @@ class WishlistPage extends StatelessWidget {
                           Text(
                             'Add your favorite games from the\nDeals menu, and save them here.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 13, color: Colors.grey[500], height: 1.5),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              height: 1.5,
+                            ),
                           ),
                           const SizedBox(height: 24),
                           OutlinedButton.icon(
@@ -118,8 +134,13 @@ class WishlistPage extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: primary,
                               side: BorderSide(color: primary),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 10,
+                              ),
                             ),
                           ),
                         ],
@@ -176,10 +197,8 @@ class WishlistPage extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => DealsDetailPage(
-                  dealId: item.dealId,
-                  title: item.title,
-                ),
+                builder: (_) =>
+                    DealsDetailPage(dealId: item.dealId, title: item.title),
               ),
             );
           },
@@ -203,7 +222,10 @@ class WishlistPage extends StatelessWidget {
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade400),
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.grey.shade400,
+                      ),
                     ),
                   ),
                 ),
@@ -224,7 +246,10 @@ class WishlistPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(8),
@@ -250,20 +275,30 @@ class WishlistPage extends StatelessWidget {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        title: const Text('Remove from Wishlist?', style: TextStyle(fontWeight: FontWeight.bold)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        title: const Text(
+                          'Remove from Wishlist?',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         content: Text('Remove "${item.title}" from wishlist?'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
                           ),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(ctx, true),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                             child: const Text('Remove'),
                           ),
@@ -280,7 +315,9 @@ class WishlistPage extends StatelessWidget {
                               backgroundColor: Colors.redAccent,
                               behavior: SnackBarBehavior.floating,
                               margin: const EdgeInsets.all(14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           );
                         }
@@ -300,7 +337,11 @@ class WishlistPage extends StatelessWidget {
                       color: Colors.red.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.delete_outline_rounded, color: Colors.red.shade400, size: 20),
+                    child: Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.red.shade400,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -323,15 +364,17 @@ class WishlistPage extends StatelessWidget {
             content: const Text('Wishlist synced ✓'),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supabaseUserMessage(error))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(supabaseUserMessage(error))));
       }
     }
   }
