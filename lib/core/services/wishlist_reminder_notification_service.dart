@@ -10,8 +10,8 @@ class WishlistReminderNotificationService {
   WishlistReminderNotificationService();
 
   static const int _notificationId = 1200;
-  static const int _scheduledHour = 17;
-  static const int _scheduledMinute = 42;
+  static const int _scheduledHour = 10;
+  static const int _scheduledMinute = 0;
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
