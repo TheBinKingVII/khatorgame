@@ -5,7 +5,8 @@ class InternetcafeEntity {
   final double latitude;
   final double longitude;
   final double rating;
-  final String pricePerHour;
+  /// Tarif per jam dalam USD (angka desimal sebagai teks, sama seperti harga game di API).
+  final String pricePerHourUsd;
   final List<String> facilities;
   double distance; // Jarak dari device/user (dalam meter)
 
@@ -16,7 +17,7 @@ class InternetcafeEntity {
     required this.latitude,
     required this.longitude,
     required this.rating,
-    required this.pricePerHour,
+    required this.pricePerHourUsd,
     required this.facilities,
     this.distance = 0.0, // Default 0 sebelum dihitung
   });

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
+import 'package:khatorgame/core/utils/currency_price_formatter.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:latlong2/latlong.dart';
 import '../controllers/internetcafe_controller.dart';
 import '../../domain/entities/internetcafe_entity.dart';
@@ -201,6 +203,7 @@ class _InternetcafePageState extends State<InternetcafePage> {
           );
         }
 
+        final ProfileController profileController = Get.find<ProfileController>();
         return Column(
           children: [
             // Peta
@@ -301,7 +304,12 @@ class _InternetcafePageState extends State<InternetcafePage> {
                   itemCount: controller.cafes.length,
                   itemBuilder: (context, index) {
                     final cafe = controller.cafes[index];
-                    return _buildCafeCard(context, cafe, index);
+                    return _buildCafeCard(
+                      context,
+                      cafe,
+                      index,
+                      profileController,
+                    );
                   },
                 ),
               ),
@@ -312,7 +320,36 @@ class _InternetcafePageState extends State<InternetcafePage> {
     );
   }
 
-  Widget _buildCafeCard(BuildContext context, InternetcafeEntity cafe, int index) {
+  Widget _hourlyRateText(
+    String priceUsd,
+    TextStyle style,
+    ProfileController profileController,
+  ) {
+    return Obx(() {
+      final String code =
+          profileController.profile.value?.currencyCode ?? 'USD';
+      return FutureBuilder<String>(
+        key: ValueKey<String>('$priceUsd|$code'),
+        future: CurrencyPriceFormatter.formatFromUsd(
+          amountText: priceUsd,
+          currencyCode: code,
+        ),
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return Text(
+            '${snapshot.data ?? '\$$priceUsd'} / Hour',
+            style: style,
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildCafeCard(
+    BuildContext context,
+    InternetcafeEntity cafe,
+    int index,
+    ProfileController profileController,
+  ) {
     final primary = Theme.of(context).colorScheme.primary;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -334,7 +371,7 @@ class _InternetcafePageState extends State<InternetcafePage> {
           borderRadius: BorderRadius.circular(14),
           onTap: () {
             mapController.move(LatLng(cafe.latitude, cafe.longitude), 16.0);
-            _showCafeDetails(context, cafe);
+            _showCafeDetails(context, cafe, profileController);
           },
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -393,9 +430,14 @@ class _InternetcafePageState extends State<InternetcafePage> {
                           const SizedBox(width: 10),
                           Icon(Icons.monetization_on_rounded, size: 13, color: Colors.green[700]),
                           const SizedBox(width: 3),
-                          Text(
-                            cafe.pricePerHour,
-                            style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.w600),
+                          _hourlyRateText(
+                            cafe.pricePerHourUsd,
+                            TextStyle(
+                              fontSize: 12,
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                            profileController,
                           ),
                         ],
                       ),
@@ -428,7 +470,11 @@ class _InternetcafePageState extends State<InternetcafePage> {
     );
   }
 
-  void _showCafeDetails(BuildContext context, InternetcafeEntity cafe) {
+  void _showCafeDetails(
+    BuildContext context,
+    InternetcafeEntity cafe,
+    ProfileController profileController,
+  ) {
     final primary = Theme.of(context).colorScheme.primary;
     showModalBottomSheet(
       context: context,
@@ -508,8 +554,10 @@ class _InternetcafePageState extends State<InternetcafePage> {
                         _infoRow(Icons.location_on_rounded, Colors.redAccent,
                             '${cafe.address} • ${(cafe.distance / 1000).toStringAsFixed(1)} KM'),
                         const SizedBox(height: 10),
-                        _infoRow(Icons.payments_rounded, Colors.green,
-                            '${cafe.pricePerHour} / Hour'),
+                        _paymentsPerHourRow(
+                          cafe.pricePerHourUsd,
+                          profileController,
+                        ),
 
                         const SizedBox(height: 16),
                         Text(
@@ -596,6 +644,50 @@ class _InternetcafePageState extends State<InternetcafePage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _paymentsPerHourRow(
+    String priceUsd,
+    ProfileController profileController,
+  ) {
+    const Color iconColor = Colors.green;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.payments_rounded, color: iconColor, size: 18),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Obx(() {
+              final String code =
+                  profileController.profile.value?.currencyCode ?? 'USD';
+              return FutureBuilder<String>(
+                key: ValueKey<String>('sheet|$priceUsd|$code'),
+                future: CurrencyPriceFormatter.formatFromUsd(
+                  amountText: priceUsd,
+                  currencyCode: code,
+                ),
+                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  return Text(
+                    '${snapshot.data ?? '\$$priceUsd'} / Hour',
+                    style: const TextStyle(fontSize: 13, height: 1.4),
+                  );
+                },
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
 
