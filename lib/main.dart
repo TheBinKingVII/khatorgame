@@ -187,21 +187,26 @@ void setupDependencies() {
     permanent: true,
   );
 
-  // 8. Internetcafe
-  Get.put<InternetcafeDeviceDataSource>(InternetcafeDeviceDataSourceImpl());
-  Get.put<InternetcafeRemoteDataSource>(InternetcafeRemoteDataSourceImpl());
-  Get.put<InternetcafeRepository>(
-    InternetcafeRepositoryImpl(
+  // 8. Internetcafe — pakai lazyPut agar controller baru hidup saat halamannya dibuka,
+  // sehingga dialog izin lokasi muncul di saat yang tepat (bukan saat login).
+  Get.lazyPut<InternetcafeDeviceDataSource>(
+    () => InternetcafeDeviceDataSourceImpl(),
+  );
+  Get.lazyPut<InternetcafeRemoteDataSource>(
+    () => InternetcafeRemoteDataSourceImpl(),
+  );
+  Get.lazyPut<InternetcafeRepository>(
+    () => InternetcafeRepositoryImpl(
       deviceDataSource: Get.find<InternetcafeDeviceDataSource>(),
       remoteDataSource: Get.find<InternetcafeRemoteDataSource>(),
     ),
   );
-  Get.put<InternetcafeUsecase>(
-    InternetcafeUsecase(Get.find<InternetcafeRepository>()),
+  Get.lazyPut<InternetcafeUsecase>(
+    () => InternetcafeUsecase(Get.find<InternetcafeRepository>()),
   );
-  Get.put<InternetcafeController>(
-    InternetcafeController(Get.find<InternetcafeUsecase>()),
-    permanent: true,
+  Get.lazyPut<InternetcafeController>(
+    () => InternetcafeController(Get.find<InternetcafeUsecase>()),
+    fenix: true, // Dibuat ulang kalau user keluar lalu masuk lagi ke halaman
   );
 }
 

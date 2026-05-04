@@ -28,8 +28,14 @@ class InternetcafeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchLocationAndCafes();
-    _startLiveTracking();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    await fetchLocationAndCafes();
+    if (errorMessage.value.isEmpty && userLocation.value != null) {
+      _startLiveTracking();
+    }
   }
 
   @override
