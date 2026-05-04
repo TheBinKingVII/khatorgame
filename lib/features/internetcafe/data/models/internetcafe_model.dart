@@ -8,7 +8,7 @@ class InternetcafeModel extends InternetcafeEntity {
     required super.latitude,
     required super.longitude,
     required super.rating,
-    required super.pricePerHour,
+    required super.pricePerHourUsd,
     required super.facilities,
     super.distance = 0.0,
   });

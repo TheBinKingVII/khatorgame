@@ -21,7 +21,7 @@ class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
         latitude: lat + (random.nextDouble() - 0.5) * 0.02,
         longitude: lng + (random.nextDouble() - 0.5) * 0.02,
         rating: 4.8,
-        pricePerHour: 'Rp 6.000',
+        pricePerHourUsd: '0.38',
         facilities: ['RTX 4060', '144Hz Monitor', 'AC Dingin', 'Smoking Area'],
       ),
       InternetcafeEntity(
@@ -31,7 +31,7 @@ class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
         latitude: lat + (random.nextDouble() - 0.5) * 0.03,
         longitude: lng + (random.nextDouble() - 0.5) * 0.03,
         rating: 4.2,
-        pricePerHour: 'Rp 4.000',
+        pricePerHourUsd: '0.25',
         facilities: ['GTX 1650', 'Mabar Area', 'Kantin'],
       ),
       InternetcafeEntity(
@@ -41,7 +41,7 @@ class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
         latitude: lat + (random.nextDouble() - 0.5) * 0.01,
         longitude: lng + (random.nextDouble() - 0.5) * 0.01,
         rating: 4.9,
-        pricePerHour: 'Rp 8.000',
+        pricePerHourUsd: '0.50',
         facilities: ['RTX 4070', '240Hz Monitor', 'VIP Room', 'Kopi Gratis'],
       ),
       InternetcafeEntity(
@@ -51,7 +51,7 @@ class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
         latitude: lat + (random.nextDouble() - 0.5) * 0.04,
         longitude: lng + (random.nextDouble() - 0.5) * 0.04,
         rating: 4.5,
-        pricePerHour: 'Rp 5.500',
+        pricePerHourUsd: '0.34',
         facilities: ['Gaming Chair', 'Mechanical Keyboard', 'AC'],
       ),
       InternetcafeEntity(
@@ -61,7 +61,7 @@ class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
         latitude: lat + (random.nextDouble() - 0.5) * 0.015,
         longitude: lng + (random.nextDouble() - 0.5) * 0.015,
         rating: 4.0,
-        pricePerHour: 'Rp 3.000',
+        pricePerHourUsd: '0.19',
         facilities: ['PC Standar', 'Bisa Ngekost', 'Internet Kencang'],
       ),
     ];

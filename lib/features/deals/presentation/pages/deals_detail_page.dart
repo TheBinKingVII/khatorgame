@@ -31,17 +31,6 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
     _detailFuture = _usecase.getDealDetail(widget.dealId);
   }
 
-  Future<String> _priceLine(
-    DealsDetailEntity detail,
-    String currencyCode,
-  ) async {
-    return CurrencyPriceFormatter.formatPriceLine(
-      salePriceUsd: detail.salePrice,
-      normalPriceUsd: detail.retailPrice,
-      currencyCode: currencyCode,
-    );
-  }
-
   Future<_ConvertedDetailPrices> _convertDetailPrices(
     DealsDetailEntity detail,
     String currencyCode,
@@ -142,8 +131,6 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                 tooltip: isFav ? 'Remove from wishlist' : 'Add to wishlist',
                 onPressed: () async {
                   try {
-                    final String currencyCode =
-                        _profileController.profile.value?.currencyCode ?? 'USD';
                     final DealsDetailEntity detail = await _detailFuture;
                     if (!context.mounted) return;
                     final bool wasFav = wishlistController.items.any(
@@ -152,7 +139,7 @@ class _DealsDetailPageState extends State<DealsDetailPage> {
                     await wishlistController.toggle(
                       dealId: widget.dealId,
                       title: detail.title,
-                      price: await _priceLine(detail, currencyCode),
+                      price: 'w2:${detail.salePrice}|${detail.retailPrice}',
                       imageUrl: detail.thumb,
                     );
                     if (!context.mounted) return;

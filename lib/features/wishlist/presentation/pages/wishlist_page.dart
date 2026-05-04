@@ -1,9 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:khatorgame/core/utils/currency_price_formatter.dart';
 import 'package:khatorgame/core/utils/supabase_user_message.dart';
 import 'package:khatorgame/features/deals/presentation/pages/deals_detail_page.dart';
+import 'package:khatorgame/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:khatorgame/features/wishlist/domain/entities/wishlist_entity.dart';
 import 'package:khatorgame/features/wishlist/presentation/controllers/wishlist_controller.dart';
+
+/// Harga disimpan sebagai `w2:<sale_usd>|<retail_usd>` agar konversi mengikuti mata uang profil.
+(String, String)? _wishlistUsdPairFromStored(String stored) {
+  const String prefix = 'w2:';
+  if (!stored.startsWith(prefix)) return null;
+  final String body = stored.substring(prefix.length);
+  final int pipe = body.indexOf('|');
+  if (pipe <= 0 || pipe >= body.length - 1) return null;
+  final String sale = body.substring(0, pipe).trim();
+  final String retail = body.substring(pipe + 1).trim();
+  if (sale.isEmpty || retail.isEmpty) return null;
+  return (sale, retail);
+}
+
+Widget _wishlistPriceLabel(
+  WishlistItemEntity item,
+  ProfileController profileController,
+) {
+  final (String, String)? pair = _wishlistUsdPairFromStored(item.price);
+  final TextStyle style = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 12.5,
+    color: Colors.green.shade700,
+  );
+  if (pair == null) {
+    return Text(item.price, style: style);
+  }
+  return Obx(() {
+    final String currencyCode =
+        profileController.profile.value?.currencyCode ?? 'USD';
+    return FutureBuilder<String>(
+      key: ValueKey<String>('${item.dealId}|$currencyCode|${item.price}'),
+      future: CurrencyPriceFormatter.formatPriceLine(
+        salePriceUsd: pair.$1,
+        normalPriceUsd: pair.$2,
+        currencyCode: currencyCode,
+      ),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        return Text(snapshot.data ?? '...', style: style);
+      },
+    );
+  });
+}
 
 class WishlistPage extends StatelessWidget {
   const WishlistPage({super.key});
@@ -152,6 +197,8 @@ class WishlistPage extends StatelessWidget {
             }
 
             // State: Has items
+            final ProfileController profileController =
+                Get.find<ProfileController>();
             return RefreshIndicator(
               color: primary,
               onRefresh: () => _onRefresh(controller, context),
@@ -160,7 +207,13 @@ class WishlistPage extends StatelessWidget {
                 itemCount: controller.items.length,
                 itemBuilder: (BuildContext context, int index) {
                   final WishlistItemEntity item = controller.items[index];
-                  return _buildWishlistCard(context, item, controller, primary);
+                  return _buildWishlistCard(
+                    context,
+                    item,
+                    controller,
+                    primary,
+                    profileController,
+                  );
                 },
               ),
             );
@@ -175,6 +228,7 @@ class WishlistPage extends StatelessWidget {
     WishlistItemEntity item,
     WishlistController controller,
     Color primary,
+    ProfileController profileController,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -255,13 +309,9 @@ class WishlistPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.green.shade200),
                         ),
-                        child: Text(
-                          item.price,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                            color: Colors.green.shade700,
-                          ),
+                        child: _wishlistPriceLabel(
+                          item,
+                          profileController,
                         ),
                       ),
                     ],
