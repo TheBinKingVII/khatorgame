@@ -121,7 +121,10 @@ class _InternetcafePageState extends State<InternetcafePage> {
 
         // State: Error (same pattern as Profile / Deals offline UI)
         if (controller.errorMessage.value.isNotEmpty) {
-          if (_connectivityTimer == null || !_connectivityTimer!.isActive) {
+          final isOffline = controller.errorMessage.value.toLowerCase().contains('koneksi terputus') || 
+                            controller.errorMessage.value.toLowerCase().contains('offline');
+          
+          if (isOffline && (_connectivityTimer == null || !_connectivityTimer!.isActive)) {
             _startConnectivityCheck(controller);
           }
 
@@ -131,11 +134,15 @@ class _InternetcafePageState extends State<InternetcafePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+                  Icon(
+                    isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded, 
+                    size: 64, 
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No Internet Connection',
-                    style: TextStyle(
+                  Text(
+                    isOffline ? 'No Internet Connection' : 'Error Occurred',
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.redAccent,
@@ -143,12 +150,23 @@ class _InternetcafePageState extends State<InternetcafePage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Waiting for internet connection to load internet cafes...',
+                    controller.errorMessage.value,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey[600], height: 1.4),
                   ),
                   const SizedBox(height: 32),
-                  CircularProgressIndicator(color: primary),
+                  if (isOffline)
+                    CircularProgressIndicator(color: primary)
+                  else
+                    ElevatedButton.icon(
+                      onPressed: () => controller.fetchLocationAndCafes(),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try Again'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
                 ],
               ),
             ),
