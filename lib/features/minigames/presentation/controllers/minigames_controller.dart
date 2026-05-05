@@ -37,7 +37,6 @@ class MinigamesController extends GetxController {
     }
   }
 
-  // Mengembalikan kode voucher kalau sukses, null kalau gagal
   Future<String?> claimVoucher() async {
     isClaiming.value = true;
     errorMessage.value = '';
@@ -45,20 +44,16 @@ class MinigamesController extends GetxController {
     try {
       final String? currentUserId = SessionService.instance.userId;
       if (currentUserId == null || currentUserId.isEmpty) {
-        throw "User tidak terdeteksi (Login dulu gih)";
+        throw "User tidak terdeteksi";
       }
 
-      // Klaim voucher dulu — ini yang butuh internet
       final String voucherCode = await usecase.claimVoucher(currentUserId);
       
-      // Update state klaim
       hasClaimedToday.value = true;
 
-      // Reload data (best effort — jangan sampai nutupin voucher yang udah berhasil)
       try {
         await loadGameData();
       } catch (_) {
-        // Reload gagal tidak masalah, voucher sudah tersimpan
         collectedVouchers.add(voucherCode);
       }
 
