@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
-import 'package:khatorgame/features/auth/domain/repositories/auth_repository.dart';
+import 'package:khatorgame/features/auth/domain/usecases/auth_usecase.dart';
 
 class AuthController extends GetxController {
-  AuthController(this._authRepository);
+  AuthController(this._authUsecase);
 
-  final AuthRepository _authRepository;
+  final AuthUsecase _authUsecase;
 
   final RxBool isLoginLoading = false.obs;
   final RxBool isRegisterLoading = false.obs;
@@ -18,13 +18,13 @@ class AuthController extends GetxController {
   }
 
   Future<void> refreshBiometricAvailability() async {
-    canUseBiometricLogin.value = await _authRepository.canShowBiometricLogin();
+    canUseBiometricLogin.value = await _authUsecase.canShowBiometricLogin();
   }
 
   Future<void> login({required String email, required String password}) async {
     isLoginLoading.value = true;
     try {
-      await _authRepository.login(email: email.trim(), password: password);
+      await _authUsecase.login(email: email.trim(), password: password);
       await refreshBiometricAvailability();
     } finally {
       isLoginLoading.value = false;
@@ -38,7 +38,7 @@ class AuthController extends GetxController {
   }) async {
     isRegisterLoading.value = true;
     try {
-      await _authRepository.register(
+      await _authUsecase.register(
         fullName: fullName.trim(),
         email: email.trim(),
         password: password,
@@ -51,7 +51,7 @@ class AuthController extends GetxController {
   Future<void> loginWithBiometric() async {
     isBiometricLoading.value = true;
     try {
-      await _authRepository.loginWithBiometric();
+      await _authUsecase.loginWithBiometric();
       await refreshBiometricAvailability();
     } finally {
       isBiometricLoading.value = false;
@@ -59,7 +59,7 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    await _authRepository.logout();
+    await _authUsecase.logout();
     await refreshBiometricAvailability();
   }
 }
