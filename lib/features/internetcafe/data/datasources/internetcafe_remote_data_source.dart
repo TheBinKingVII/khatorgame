@@ -8,7 +8,6 @@ abstract class InternetcafeRemoteDataSource {
 class InternetcafeRemoteDataSourceImpl implements InternetcafeRemoteDataSource {
   @override
   Future<List<InternetcafeEntity>> getDummyCafes(double lat, double lng) async {
-    // Simulasi delay seakan-akan ngambil data dari internet (API)
     await Future.delayed(const Duration(milliseconds: 500));
     
     final random = Random();

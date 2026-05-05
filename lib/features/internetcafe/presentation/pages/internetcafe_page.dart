@@ -46,6 +46,77 @@ class _InternetcafePageState extends State<InternetcafePage> {
     });
   }
 
+  Widget _buildOfflineBody(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            const Text(
+              'No Internet Connection',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Waiting for internet connection to scan for nearby cafes...',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], height: 1.4),
+            ),
+            const SizedBox(height: 32),
+            CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBody(BuildContext context, InternetcafeController controller, Color primary) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline_rounded, size: 64, color: Colors.redAccent),
+            const SizedBox(height: 16),
+            const Text(
+              'Error Occurred',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              controller.errorMessage.value,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], height: 1.4),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => controller.fetchLocationAndCafes(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final InternetcafeController controller = Get.find<InternetcafeController>();
@@ -119,58 +190,19 @@ class _InternetcafePageState extends State<InternetcafePage> {
           );
         }
 
-        // State: Error (same pattern as Profile / Deals offline UI)
+        // State: Error atau Offline
         if (controller.errorMessage.value.isNotEmpty) {
           final isOffline = controller.errorMessage.value.toLowerCase().contains('koneksi terputus') || 
-                            controller.errorMessage.value.toLowerCase().contains('offline');
+                            controller.errorMessage.value.toLowerCase().contains('offline') ||
+                            controller.errorMessage.value.toLowerCase().contains('network');
           
           if (isOffline && (_connectivityTimer == null || !_connectivityTimer!.isActive)) {
             _startConnectivityCheck(controller);
           }
 
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded, 
-                    size: 64, 
-                    color: Colors.redAccent,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    isOffline ? 'No Internet Connection' : 'Error Occurred',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    controller.errorMessage.value,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600], height: 1.4),
-                  ),
-                  const SizedBox(height: 32),
-                  if (isOffline)
-                    CircularProgressIndicator(color: primary)
-                  else
-                    ElevatedButton.icon(
-                      onPressed: () => controller.fetchLocationAndCafes(),
-                      icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Try Again'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primary,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );
+          return isOffline 
+            ? _buildOfflineBody(context) 
+            : _buildErrorBody(context, controller, primary);
         }
 
         _connectivityTimer?.cancel();

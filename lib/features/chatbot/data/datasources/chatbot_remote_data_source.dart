@@ -15,7 +15,7 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
   @override
   Future<ChatbotModel> getGeminiResponse(String prompt) async {
     if (apiKey.isEmpty) {
-      throw Exception('API Key kosong!');
+      throw Exception('API Key is missing!');
     }
 
     int retries = 0;
@@ -44,7 +44,7 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
         final textResponse = response['candidates'][0]['content']['parts'][0]['text'];
         
         return ChatbotModel.fromGeminiResponse(
-          textResponse as String? ?? 'Maaf, AI belum bisa menanggapi saat ini.'
+          textResponse as String? ?? 'Sorry, AI is unable to respond at this time.'
         );
         
       } catch (e) {
@@ -54,19 +54,19 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
         if (errorStr.contains('503')) {
           if (retries < maxRetries - 1) {
             retries++;
-            // Tunggu beberapa detik (Exponential backoff) sebelum mencoba lagi
+            // Wait for exponential backoff
             await Future.delayed(Duration(seconds: retries * 2));
-            continue; // Ulangi loop
+            continue; 
           }
-          errorMessage = 'Server AI dari pusat sedang penuh/sibuk (Error 503). Coba lagi nanti.';
+          errorMessage = 'AI Server is currently busy (Error 503). Please try again later.';
         } else if (errorStr.contains('400')) {
-          errorMessage = 'Permintaan tidak valid (Error 400). Mohon periksa kembali pesan Anda.';
+          errorMessage = 'Invalid request (Error 400). Please check your message.';
         } else if (errorStr.contains('401') || errorStr.contains('403')) {
-          errorMessage = 'Ada masalah pada API Key Gemini (Akses Ditolak).';
+          errorMessage = 'Gemini API Key issue (Access Denied).';
         } else if (errorStr.contains('429')) {
-          errorMessage = 'Batas penggunaan AI sudah habis sementara (Error 429). Mohon tunggu sebentar ya.';
+          errorMessage = 'AI usage limit reached (Error 429). Please wait a moment.';
         } else if (errorStr.contains('socketexception') || errorStr.contains('connection timeout') || errorStr.contains('network is unreachable')) {
-          errorMessage = 'Koneksi internet bermasalah. Pastikan jaringan kamu stabil ya.';
+          errorMessage = 'Network problem. Please ensure your connection is stable.';
         }
 
         throw Exception(errorMessage);

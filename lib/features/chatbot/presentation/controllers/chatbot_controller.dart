@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:get/get.dart';
 import 'package:khatorgame/core/errors/app_error_mapper.dart';
 import 'package:khatorgame/features/deals/presentation/controllers/deals_controller.dart';
@@ -20,40 +19,21 @@ class ChatbotController extends GetxController {
     isLoading.value = true;
 
     try {
-      // 1. Cek Koneksi Internet Dulu
-      try {
-        final result = await InternetAddress.lookup('google.com')
-            .timeout(const Duration(seconds: 3));
-        if (result.isEmpty || result[0].rawAddress.isEmpty) {
-          throw Exception('Koneksi terputus. Pastikan jaringan internet stabil!');
-        }
-      } catch (_) {
-        throw Exception('Koneksi terputus. Pastikan jaringan internet stabil!');
-      }
-
       String secretContext = "";
 
-      // 2. Panggil DealsController singleton dari dependency container.
       final DealsController dealsController = Get.find<DealsController>();
-      
-      // 3. Pastikan data sudah diload dari API. Jika masih kosong, paksa load!
+
       if (dealsController.deals.isEmpty) {
         await dealsController.loadInitialDeals();
       }
       
-      // 4. Jika data dari API berhasil didapat
       if (dealsController.deals.isNotEmpty) {
-        // TIPS PRO: Karena API mengembalikan banyak data (bisa puluhan/ratusan),
-        // kita ambil maksimal 20 atau 30 game pertama saja agar prompt tidak melebihi 
-        // batas maksimal token Gemini dan tidak lemot.
         final topDeals = dealsController.deals.take(30).toList();
         
-        // Mapping properti sesuai dengan DealsEntity buatan temanmu
         final listDiskon = topDeals.map((game) => 
           "- ${game.title}: Harga normal \$${game.normalPrice}, sekarang diskon jadi \$${game.salePrice} (Hemat ${game.savingsAsPercent}%)"
         ).join('\n');
-        
-        // 5. Suntikkan instruksi tegas ke AI namun tetap ramah
+
         secretContext = """
 SYSTEM INSTRUCTIONS:
 Kamu adalah "Khator Assistant", AI pintar, ramah, dan asyik bergaya anak gamers yang bertugas membantu user di aplikasi "Khator Game".
@@ -72,7 +52,6 @@ Aturan menjawab:
 
       final enrichedPrompt = "$secretContext\n\n[Pesan User]: $prompt";
 
-      // Pantau prompt yang akan dikirim di terminal
       print("DEBUG ENRICHED PROMPT:\n$enrichedPrompt");
 
       final response = await usecase.execute(enrichedPrompt);
