@@ -121,7 +121,10 @@ void setupDependencies() {
 
   // 4. Auth
   Get.put<AuthRepository>(AuthRepositoryImpl(), permanent: true);
-  Get.put<AuthUsecase>(AuthUsecase(Get.find<AuthRepository>()), permanent: true);
+  Get.put<AuthUsecase>(
+    AuthUsecase(Get.find<AuthRepository>()),
+    permanent: true,
+  );
   Get.put<AuthController>(
     AuthController(Get.find<AuthUsecase>()),
     permanent: true,

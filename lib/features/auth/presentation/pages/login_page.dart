@@ -21,6 +21,14 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    // Re-check biometrics each time login page is opened so the button
+    // reflects the latest setting changed from profile.
+    _authController.refreshBiometricAvailability();
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
