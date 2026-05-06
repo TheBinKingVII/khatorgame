@@ -42,10 +42,13 @@ class _DealsPageState extends State<DealsPage> {
 
   void _startConnectivityCheck() {
     _connectivityTimer?.cancel();
-    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 3), (
+      timer,
+    ) async {
       try {
-        final result = await InternetAddress.lookup('google.com')
-            .timeout(const Duration(seconds: 3));
+        final result = await InternetAddress.lookup(
+          'google.com',
+        ).timeout(const Duration(seconds: 3));
         if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
           timer.cancel();
           if (mounted) {
@@ -80,9 +83,7 @@ class _DealsPageState extends State<DealsPage> {
       children: <Widget>[
         Obx(_buildSearchField),
         Obx(_buildStoreFilterSection),
-        Expanded(
-          child: Obx(_buildDealsContent),
-        ),
+        Expanded(child: Obx(_buildDealsContent)),
       ],
     );
   }
@@ -122,9 +123,7 @@ class _DealsPageState extends State<DealsPage> {
                   },
                 )
               : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
@@ -164,7 +163,8 @@ class _DealsPageState extends State<DealsPage> {
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
                     label: Text(store.storeName),
-                    selected: _controller.selectedStoreId.value == store.storeId,
+                    selected:
+                        _controller.selectedStoreId.value == store.storeId,
                     onSelected: (_) =>
                         _controller.changeStoreFilter(store.storeId),
                   ),
@@ -197,7 +197,11 @@ class _DealsPageState extends State<DealsPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Icon(Icons.wifi_off_rounded, size: 64, color: Colors.redAccent),
+              const Icon(
+                Icons.wifi_off_rounded,
+                size: 64,
+                color: Colors.redAccent,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'No Internet Connection',
@@ -214,7 +218,9 @@ class _DealsPageState extends State<DealsPage> {
                 style: TextStyle(color: Colors.grey[600], height: 1.4),
               ),
               const SizedBox(height: 32),
-              CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+              CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ],
           ),
         ),
@@ -243,7 +249,8 @@ class _DealsPageState extends State<DealsPage> {
           childAspectRatio: 0.82,
         ),
         itemCount:
-            _controller.deals.length + (_controller.isLoadingMore.value ? 2 : 0),
+            _controller.deals.length +
+            (_controller.isLoadingMore.value ? 2 : 0),
         itemBuilder: (BuildContext context, int index) {
           if (index >= _controller.deals.length) {
             return Container(
@@ -308,7 +315,9 @@ class _DealsPageState extends State<DealsPage> {
                                 ) => Container(
                                   color: Colors.grey.shade200,
                                   alignment: Alignment.center,
-                                  child: const Icon(Icons.broken_image_outlined),
+                                  child: const Icon(
+                                    Icons.broken_image_outlined,
+                                  ),
                                 ),
                           ),
                         ),
@@ -340,44 +349,46 @@ class _DealsPageState extends State<DealsPage> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                deal.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                      child: Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                  deal.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          _buildPriceText(
-                            amountText: deal.salePrice,
-                            currencyCode: currencyCode,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.green,
+                            const SizedBox(height: 6),
+                            _buildPriceText(
+                              amountText: deal.salePrice,
+                              currencyCode: currencyCode,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.green,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          _buildPriceText(
-                            amountText: deal.normalPrice,
-                            currencyCode: currencyCode,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              decoration: TextDecoration.lineThrough,
-                              color: Colors.grey,
+                            const SizedBox(height: 2),
+                            _buildPriceText(
+                              amountText: deal.normalPrice,
+                              currencyCode: currencyCode,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
