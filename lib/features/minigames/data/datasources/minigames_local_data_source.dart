@@ -41,6 +41,29 @@ class MinigamesLocalDataSourceImpl implements MinigamesLocalDataSource {
     await prefs.setString(_lastClaimDateKey, today);
   }
 
+  // Buat testing
+  // @override
+  // Future<bool> hasClaimedToday() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final String lastClaim = prefs.getString(_lastClaimDateKey) ?? "";
+    
+  //   if (lastClaim.isEmpty) return false;
+
+  //   final lastClaimTime = DateTime.parse(lastClaim);
+  //   final now = DateTime.now();
+    
+  //   // Reset setiap 1 menit
+  //   final difference = now.difference(lastClaimTime).inMinutes;
+  //   return difference < 1; // Kalau baru 0 menit, berarti sudah klaim. Kalau sudah 1 menit, reset.
+  // }
+
+  // @override
+  // Future<void> setHasClaimedToday() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(_lastClaimDateKey, DateTime.now().toIso8601String());
+  // }
+
+
   @override
   Future<void> resetData() async {
     final prefs = await SharedPreferences.getInstance();

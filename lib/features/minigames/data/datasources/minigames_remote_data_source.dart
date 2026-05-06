@@ -14,7 +14,7 @@ class MinigamesRemoteDataSourceImpl implements MinigamesRemoteDataSource {
 
   @override
   Future<VoucherModel> claimVoucher(String userId) async {
-    // 1. Cari 1 voucher yang belum dimiliki siapapun
+    // Cari 1 voucher yang belum dimiliki siapapun
     final response = await _client
         .from('vouchers')
         .select()
@@ -23,12 +23,12 @@ class MinigamesRemoteDataSourceImpl implements MinigamesRemoteDataSource {
         .maybeSingle();
 
     if (response == null) {
-      throw Exception("Voucher out of stock! Contact admin.");
+      throw Exception("Out of stock. Vouchers are currently unavailable.");
     }
 
     final voucher = VoucherModel.fromJson(response);
 
-    // 2. Tandai voucher ini milik user
+    // Tandai voucher ini milik user
     await _client
         .from('vouchers')
         .update({'user_id': userId})

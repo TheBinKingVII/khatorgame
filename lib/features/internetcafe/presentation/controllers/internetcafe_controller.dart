@@ -16,11 +16,9 @@ class InternetcafeController extends GetxController {
   var isLoading = true.obs;
   var errorMessage = ''.obs;
 
-  // Untuk menyimpan garis rute di peta
   var routePoints = <LatLng>[].obs;
   var isFetchingRoute = false.obs;
 
-  // Menyimpan koneksi live tracking
   StreamSubscription<Position>? _positionStream;
 
   InternetcafeController(this.usecase);
@@ -40,7 +38,7 @@ class InternetcafeController extends GetxController {
 
   @override
   void onClose() {
-    _positionStream?.cancel(); // Mencegah memory leak saat ditutup
+    _positionStream?.cancel();
     super.onClose();
   }
 
@@ -54,7 +52,6 @@ class InternetcafeController extends GetxController {
     _positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
       (Position position) {
         userLocation.value = position;
-        // Lokasi "userLocation" di-observe oleh peta, jadi titik biru akan bergerak otomatis!
       },
     );
   }
@@ -64,7 +61,6 @@ class InternetcafeController extends GetxController {
     errorMessage.value = '';
 
     try {
-      // 1. Cek Koneksi Internet Dulu
       try {
         final result = await InternetAddress.lookup('google.com')
             .timeout(const Duration(seconds: 3));
@@ -95,15 +91,13 @@ class InternetcafeController extends GetxController {
     }
   }
 
-  // Tarik data rute (Polyline) dari Open Source Routing Machine (OSRM)
   Future<void> fetchRouteTo(double destLat, double destLng) async {
     if (userLocation.value == null) return;
     
     isFetchingRoute.value = true;
-    routePoints.clear(); // Hapus rute lama
+    routePoints.clear();
     
     try {
-      // 1. Cek Koneksi Internet Dulu
       try {
         final result = await InternetAddress.lookup('google.com')
             .timeout(const Duration(seconds: 3));

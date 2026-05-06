@@ -32,10 +32,8 @@ class MinigamesPage extends StatefulWidget {
 }
 
 class _MinigamesPageState extends State<MinigamesPage> {
-  // GetX Controller (Logic & State)
   final MinigamesController _controller = Get.find<MinigamesController>();
 
-  // Sensor streams
   StreamSubscription<AccelerometerEvent>? _accelSubscription;
   StreamSubscription<dynamic>? _proximitySubscription;
 
@@ -49,10 +47,9 @@ class _MinigamesPageState extends State<MinigamesPage> {
   final Random _random = Random();
 
   bool _isGameOver = false;
-  bool _gameStarted = false; // Flag status game
+  bool _gameStarted = false;
 
-  // Scoring Target
-  final int _targetScore = 200; // Target testing (ganti ke 2000 nanti)
+  final int _targetScore = 200; // Target testing
   
   // Fitur Magnet
   bool _isMagnetActive = false;
@@ -103,7 +100,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
   }
 
   void _startGame() {
-    // Blokir jika offline
     if (_isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -235,11 +231,9 @@ class _MinigamesPageState extends State<MinigamesPage> {
     await _tryClaim();
   }
 
-  // Method klaim yang bisa dipanggil ulang tanpa perlu stop game lagi
   Future<void> _tryClaim() async {
     if (!mounted) return;
 
-    // Cek koneksi real-time sebelum klaim
     bool canConnect = false;
     try {
       final result = await InternetAddress.lookup('google.com')
@@ -252,7 +246,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
     if (!mounted) return;
 
     if (!canConnect) {
-      // Offline — tampilkan dialog ramah dengan tombol retry
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -280,7 +273,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
             ElevatedButton.icon(
               onPressed: () async {
                 Navigator.pop(ctx);
-                await _tryClaim(); // Coba klaim ulang tanpa restart game
+                await _tryClaim();
               },
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Try Again'),
@@ -296,7 +289,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
       return;
     }
 
-    // Online — lanjut klaim voucher
     final voucherCode = await _controller.claimVoucher();
     if (!mounted) return;
     if (voucherCode != null) {
@@ -407,10 +399,8 @@ class _MinigamesPageState extends State<MinigamesPage> {
     );
   }
 
-  // Fungsi untuk reset data (kita minta konteks dialognya biar gak salah tutup)
   Future<void> _resetGameData(BuildContext dialogContext) async {
     try {
-      // Tutup dialognya pake konteks dialog itu sendiri
       Navigator.of(dialogContext).pop();
       
       await _controller.resetTestingData();
@@ -425,7 +415,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
     }
   }
 
-  // Tampilkan daftar semua voucher yang pernah didapat beserta konversi waktunya
   void _showInventoryDialog() {
     String selectedZone = 'WIB (Jakarta)';
     int? copiedIndex;
@@ -452,7 +441,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
             title: const Text('Vouchers', style: TextStyle(color: Colors.white)),
             content: SizedBox(
               width: double.maxFinite,
-              // Kasih batasan max biar nggak overflow ke luar layar
               height: 400,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -495,7 +483,6 @@ class _MinigamesPageState extends State<MinigamesPage> {
                         itemCount: _controller.collectedVouchers.length,
                         itemBuilder: (context, index) {
                           final item = _controller.collectedVouchers[index];
-                          // Pecah string berformat "KODE#TIMESTAMP_UTC"
                           final parts = item.split('#');
                           final code = parts[0];
                           String timeDisplay = "Claim time unrecorded (legacy data)";
@@ -577,7 +564,7 @@ class _MinigamesPageState extends State<MinigamesPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => _resetGameData(context), // <--- Pakai konteks dialog ini
+                onPressed: () => _resetGameData(context),
                 child: const Text('RESET DATA', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
               ),
               TextButton(onPressed: () => Navigator.pop(context), child: const Text('CLOSE', style: TextStyle(color: Colors.blueAccent))),
